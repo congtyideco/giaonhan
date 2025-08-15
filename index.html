@@ -1024,7 +1024,7 @@
                 });
             
             // Đếm số đơn chờ giao (isDelivered = false)
-            database.ref('packings').orderByChild('isDelivered').equalTo(false).once('value')
+            database.ref('packings').orderByChild('isDelivered').equalTo(true).once('value')
                 .then((snapshot) => {
                     const count = snapshot.exists() ? snapshot.numChildren() : 0;
                     document.getElementById('waitingDeliveryCount').textContent = count;
