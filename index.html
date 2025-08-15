@@ -887,6 +887,12 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         let currentEditKey = null;
         let currentPackingEditKey = null;
         
+        // Popup cảnh báo mất thống kê khi xóa (GLOBAL)
+        function confirmStatsLoss() {
+            return confirm("Bạn cân nhắc kỹ khi xóa nhé vì sẽ mất dữ liệu thống kê. Nếu không muốn sai , bạn phải khai lại đúng nhé");
+        }
+
+        
         // Biến để xử lý xác nhận chuyển giao
         let pendingTransfer = { key: null, targetStatus: null };
         
@@ -1061,6 +1067,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         
         // Đóng modal hướng dẫn
         function closeHelpModal() {
+
             document.getElementById('helpModal').style.display = 'none';
         }
         
@@ -1262,7 +1269,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         
         // Xác nhận xóa đơn đóng hàng
         function confirmDeletePacking(key) {
-            if (confirm("Bạn có chắc chắn muốn xóa đơn đóng hàng này?")) {
+            if (confirmStatsLoss()) {
                 deletePacking(key);
             }
         }
@@ -1426,7 +1433,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         
         // Xác nhận xóa đơn giao hàng
         function confirmDeleteDelivery(key) {
-            if (confirm("Bạn có chắc chắn muốn xóa đơn giao hàng này?")) {
+            if (confirmStatsLoss()) {
                 deleteDelivery(key);
             }
         }
@@ -1579,7 +1586,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         
         // Xác nhận xóa từ trang quản lý
         function confirmDeleteDeliveryFromManagement(key) {
-            if (confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) {
+            if (confirmStatsLoss()) {
                 deleteDelivery(key, true);
             }
         }
