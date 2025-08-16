@@ -431,9 +431,11 @@
                     <label for="packingDate">Ngày đóng hàng:</label>
                     <input type="date" id="packingDate" required>
                 </div>
-                <button class="btn btn-primary" onclick="savePacking()">
-                    <i class="fas fa-box"></i> Xác nhận đóng hàng
-                </button>
+               <button class="btn btn-primary" onclick="confirmPacking()">
+    <i class="fas fa-box"></i> Xác nhận đơn đã đóng hàng xong
+</button>
+
+
             </div>
             
             <div class="section-divider"></div>
@@ -507,7 +509,7 @@
                     </div>
                 </div>
                 <button class="btn btn-primary" onclick="saveDelivery()">
-                    <i class="fas fa-save"></i> Lưu thông tin
+                    <i class="fas fa-save"></i> Giao xong - hay phải giao mới bấm lưu dữ liệu
                 </button>
             </div>
             
@@ -608,7 +610,7 @@
                             <th>Người giao</th>
                             <th>Khách hàng</th>
                             <th>Địa chỉ</th>
-                        </tr>
+                       <th>Xóa</th> <th>Xóa</th></tr>
                     </thead>
                     <tbody id="reportTableBody">
                         <!-- Dữ liệu báo cáo sẽ được thêm ở đây -->
@@ -684,7 +686,37 @@
         </div>
         
         <!-- Tab Quản lý -->
-        <div class="tab-content" id="management-tab">
+        
+
+<!-- ===== (IDECO) Lịch sử xóa báo cáo ===== -->
+<section id="auditLogsSection" style="margin:16px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+    <h2 style="margin:0;">📒 Lịch sử xóa báo cáo</h2>
+    <div style="display:flex; gap:8px;">
+      <button id="refreshAuditLogsBtn">Tải lại</button><button id="deleteSelectedAuditBtn" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px;">Xóa đã chọn</button>
+      <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
+        Hiển thị tối đa:
+        <input type="number" id="auditLimitInput" value="200" min="10" max="1000" step="10" style="width:90px;">
+      </label>
+    </div>
+  </div>
+  <div style="overflow:auto; margin-top:10px;">
+    <table style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background:#f3f4f6;">
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb; width:48px;"><input type="checkbox" id="auditSelectAll"></th>
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Thời gian</th>
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Loại báo cáo</th>
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Tên người xóa</th>
+        </tr>
+      </thead>
+      <tbody id="auditLogsTableBody">
+        <tr><td colspan="3" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<div class="tab-content" id="management-tab">
             <div class="card">
                 <h2>Quản lý đơn hàng</h2>
                 
@@ -804,10 +836,12 @@
     <div id="transferConfirmModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeTransferConfirmModal()">&times;</span>
-            <h2>Nhắc nhở trước khi chuyển giao</h2>
+             <h2>EM NÊN ĐỌC NỘI DUNG SAU CẨN THẬN !</h2>
             <p style="margin-top:10px; white-space: pre-line;">
-Bạn đã kiểm tra lại số lượng theo đơn, quy cách, số lô, hạn dùng phải không?
-Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra lại trên ERP.
+Em đã sẵn sàng mang đi giao hàng hay đơn vị giao đến nhận ngay chưa ? kiểm tra lại lộ trình chưa ?báo nhiêu kiện cho đơn này?
+Khi giao hàng đảm bảo thùng hàng có tem nhãn ghi chính xác không? có hóa đơn, đơn hàng kèm  theo thùng chưa? phải đảm bảo đầy dủ
+Nếu đã bấm chuyển giao hàng thì phải hoàn thành giao hàng ngay tránh đơn hàng khai báo bị trôi tin, sót đơn trên ứng dụng
+Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân viên nào đang thu lý giao phải khai thông tin giao mới được giao hàng.
             </p>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeTransferConfirmModal()">Hủy</button>
@@ -815,23 +849,43 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
             </div>
         </div>
     </div>
-    
+    <!-- Modal xác nhận đóng hàng -->
+<div id="packingConfirmModal" class="modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-labelledby="packingConfirmTitle" aria-modal="true">
+    <span class="close-btn" onclick="closePackingConfirmModal()" aria-label="Đóng">&times;</span>
+    <h2 id="packingConfirmTitle">XÁC NHẬN HOÀN TẤT ĐÓNG HÀNG</h2>
+    <p style="margin-top:10px; white-space:pre-line;">
+Bạn đã chắc chắn kiểm tra các nội dung sau chưa?
+
+• Số lô và hạn dùng (date) của từng sản phẩm
+• Phiếu xuất kho
+• Đơn hàng đầy đủ chứng từ
+
+Vui lòng đảm bảo đúng thủ tục trước khi xác nhận hoàn thành đóng hàng.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePackingConfirmModal()">Hủy</button>
+      <button class="btn btn-primary" id="confirmPackingBtn">Đồng ý</button>
+    </div>
+  </div>
+</div>
+
     <!-- Modal hướng dẫn -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeHelpModal()">&times;</span>
             <h2>Hướng dẫn sử dụng</h2>
             <div class="help-content">
-                <h3>1. Đóng hàng</h3>
+                <h3>1. Phần này do: Điều phối khó đảm nhận khai báo - ngoài ra Quản lý kho cũng được tham gia </h3>
                 <ul>
-                    <li>Nhập thông tin đơn hàng: Mã đơn, tên khách hàng, địa chỉ và ngày đóng hàng</li>
-                    <li>Nhấn nút bản đồ để kiểm tra địa chỉ trên Google Maps</li>
-                    <li>Nhấn "Xác nhận đóng hàng" để lưu thông tin</li>
-                    <li>Danh sách đơn hàng đã đóng sẽ hiển thị ở bảng bên dưới</li>
-                    <li>Có thể sửa, xóa hoặc thay đổi trạng thái giao hàng từ bảng này</li>
+                    <li>Sau khi mọi đơn hàng đã được đóng xong sẵn sàng giao ra kho thì phải khai báo ngay trước khi ra khỏi kho</li>
+                    <li>Mã đơn hàng từ đơn hàng ERP in ra và nhập đúng chính xác</li>
+                    <li>Thông tin tên khách hàng- địa chỉ giao hàng phải điền đủ hay chỉnh lại đúng sau đó</li>
+                    <li>Khi đóng hàng đơn hàng này thì xử lý xong rồi bấm đã xong đóng gói</li>
+                    <li>Trạng thái báo: đang chờ màu đỏ tức là tình trạnh đơn chưa được giao đang tạm lưu kho</li>
                 </ul>
                 
-                <h3>2. Giao hàng</h3>
+                <h3>2. Giao hàng -Phần này do phụ trách điều phối vận chuyển- giao hàng hay người hỗ trợ giao hàng thực hiện</h3>
                 <ul>
                     <li>Nhập: Mã đơn, ngày giao, <b>tên người giao</b>, tên khách hàng và địa chỉ</li>
                     <li>Nhấn nút bản đồ để kiểm tra địa chỉ trên Google Maps</li>
@@ -858,6 +912,11 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
                     <li>Hệ thống tự động cập nhật các thống kê quan trọng ở mỗi tab</li>
                     <li>Thống kê được reset hàng ngày vào lúc 00:00</li>
                 </ul>
+				 <h3>Xóa báo cáo </h3>
+                <ul>
+                    <li>Nhập tên người xoa - password:ideco@2025</li>
+                    <li>Hãy xem xét cẩn thận trước khi xóa</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -883,7 +942,216 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        // Biến toàn cục
+        
+
+
+
+
+
+
+
+// ==== Xóa 1 dòng trong Báo cáo giao hàng ====
+function handleDeleteFromReport(btn){
+    try{
+        const key = btn.getAttribute('data-key') || '';
+        const orderId = btn.getAttribute('data-order-id') || '';
+        confirmDeleteDeliveryFromReport(key, orderId);
+    }catch(e){
+        alert("Không thể xử lý xóa: " + e.message);
+    }
+}
+
+function confirmDeleteDeliveryFromReport(key, orderId){
+    function proceed(realKey){
+        const pass = prompt("Nhập mật khẩu để xóa đơn giao hàng này:");
+        if(pass !== "minhtriet1973"){ alert("Sai mật khẩu."); return; }
+        deleteDelivery(realKey, false);
+        setTimeout(generateDeliveryReport, 300);
+    }
+
+    if (key) { proceed(key); return; }
+    if (!orderId){
+        alert("Không xác định được khóa hoặc mã đơn để xóa.");
+        return;
+    }
+    try{
+        database.ref('deliveries').orderByChild('orderId').equalTo(orderId).once('value')
+            .then((snap) => {
+                let found = null;
+                snap.forEach(child => { if(!found){ found = child.key; } });
+                if (!found){
+                    alert("Không tìm thấy đơn để xóa (theo Mã đơn).");
+                    return;
+                }
+                proceed(found);
+            })
+            .catch(err => alert("Lỗi tìm khóa theo Mã đơn: " + err.message));
+    }catch(e){
+        alert("Lỗi truy vấn Firebase: " + e.message);
+    }
+}
+
+// ===== (IDECO) CHỌN & XÓA LỊCH SỬ XÓA BÁO CÁO =====
+function getSelectedAuditIds(){
+    const boxes = document.querySelectorAll('input.auditRowCbx[type="checkbox"]:checked');
+    return Array.from(boxes).map(b => b.value);
+}
+
+
+async function deleteSelectedAuditLogs(){
+    const ids = getSelectedAuditIds();
+    if(ids.length === 0){
+        alert("Chưa chọn bản ghi nào.");
+        return;
+    }
+    const name = prompt("Nhập tên người thực hiện xóa lịch sử:");
+    if(!name){ alert("Bạn chưa nhập tên."); return; }
+    const pass = prompt("Nhập mật khẩu xóa lịch sử:");
+    if(pass !== "minhtriet1973"){
+        alert("Sai mật khẩu.");
+        return;
+    }
+    if(!confirm(`Xóa ${ids.length} dòng lịch sử?`)) return;
+
+    try {
+        // Xóa từng bản ghi
+        const tasks = ids.map(id => database.ref(`/auditLogs/reportClears/${id}`).remove());
+        await Promise.all(tasks);
+        // Ghi log người xóa
+        await database.ref('/auditLogs/auditLogDeletes').push({
+            deleterName: name,
+            deletedCount: ids.length,
+            deletedIds: ids,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        alert("Đã xóa lịch sử đã chọn.");
+        const limitInput = document.getElementById('auditLimitInput');
+        loadAuditLogs(limitInput ? limitInput.value : 200);
+    } catch(e){
+        alert("Lỗi khi xóa lịch sử: " + e.message);
+        console.error(e);
+    }
+}
+// Hook nút xóa
+
+(function(){
+    const btn = document.getElementById('deleteSelectedAuditBtn');
+    if(btn){
+        btn.addEventListener('click', deleteSelectedAuditLogs);
+    }
+    // Hook chọn tất cả
+    const cbAll = document.getElementById('auditSelectAll');
+    if(cbAll){
+        cbAll.addEventListener('change', function(){
+            document.querySelectorAll('input.auditRowCbx[type="checkbox"]').forEach(cb => cb.checked = cbAll.checked);
+        });
+    }
+})();
+
+// ===== (IDECO) HIỂN THỊ LỊCH SỬ XÓA BÁO CÁO =====
+function formatVNTime(ts){
+    try{
+        const d = new Date(ts);
+        // Fallback if server value comes as number or string
+        return d.toLocaleString('vi-VN');
+    }catch(e){ return String(ts); }
+}
+
+let auditListener = null;
+function loadAuditLogs(limitCount){
+    const tbody = document.getElementById('auditLogsTableBody');
+    if(!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>`;
+
+    // detach previous listener if any
+    if (auditListener) {
+        auditListener.off && auditListener.off();
+        auditListener = null;
+    }
+    const ref = database.ref('/auditLogs/reportClears').orderByChild('timestamp').limitToLast(Number(limitCount)||200);
+    ref.on('value', snap => {
+        const rows = [];
+        const data = snap.val() || {};
+        // Convert to array and sort desc by timestamp
+        const arr = Object.entries(data).map(([k,v]) => ({id:k, ...v}))
+            .sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+        if(arr.length === 0){
+            tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; color:#6b7280;">Chưa có log xóa nào.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = '';
+        arr.forEach(item => {
+            const when = item.timestamp ? formatVNTime(item.timestamp) : '-';
+            const typ = item.type === 'delivery' ? 'Giao hàng' : (item.type === 'packing' ? 'Đóng hàng' : (item.type||'-'));
+            const who = item.deleterName || '-';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;"><input class="auditRowCbx" type="checkbox" value="${item.id}"></td>
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${when}</td>
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${typ}</td>
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${who}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+    // store to detach later
+    auditListener = ref;
+}
+
+// Hook controls
+(function(){
+    const btn = document.getElementById('refreshAuditLogsBtn');
+    const input = document.getElementById('auditLimitInput');
+    if(btn){
+        btn.addEventListener('click', () => loadAuditLogs(input ? input.value : 200));
+    }
+    // Auto-load on start (give DOM a tick)
+    setTimeout(() => loadAuditLogs(input ? input.value : 200), 300);
+})();
+
+// ===== (IDECO) BỔ SUNG TÍNH NĂNG THEO YÊU CẦU =====
+
+// 1) Tự động UPPERCASE khi nhập mã đơn hàng
+function attachUppercaseHandler(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', function(){
+        const s = this.selectionStart;
+        const e = this.selectionEnd;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(s, e);
+    });
+}
+// Gắn khi DOM sẵn sàng (an toàn nếu gọi nhiều lần)
+(function(){
+    const ids = ['packingOrderId','orderId','editOrderId','editPackingOrderId'];
+    ids.forEach(attachUppercaseHandler);
+})();
+
+// 2) Hàm xác thực xóa báo cáo (mật khẩu + lưu tên người xóa)
+function requestDeletionAuth(reportType){
+    const name = prompt("Nhập tên người xóa báo cáo:");
+    if(!name){ alert("Bạn chưa nhập tên."); return null; }
+    const pass = prompt("Nhập mật khẩu xóa báo cáo:");
+    if(pass !== "ideco@2025"){ alert("Sai mật khẩu."); return null; }
+    // Lưu log người xóa
+    try {
+        database.ref('/auditLogs/reportClears').push({
+            type: reportType,
+            deleterName: name,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    } catch(e){ /* noop */ }
+    return {name};
+}
+
+// 3) Kiểm tra trùng mã đơn khi LƯU GIAO HÀNG
+async function isDuplicateOrderId(orderId){
+    const snap = await database.ref('deliveries').orderByChild('orderId').equalTo(orderId).once('value');
+    return snap.exists();
+}
+
+// Biến toàn cục
         let currentEditKey = null;
         let currentPackingEditKey = null;
         
@@ -1101,7 +1369,8 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         
         // Lưu thông tin đóng hàng
         function savePacking() {
-            const orderId = document.getElementById('packingOrderId').value.trim();
+            let orderId = document.getElementById('packingOrderId').value.trim().toUpperCase();
+            document.getElementById('packingOrderId').value = orderId;
             const customerName = document.getElementById('packingCustomerName').value.trim();
             const address = document.getElementById('packingAddress').value.trim();
             const packingDate = document.getElementById('packingDate').value;
@@ -1235,7 +1504,8 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         // Cập nhật thông tin đóng hàng
         function updatePacking() {
             const key = currentPackingEditKey;
-            const orderId = document.getElementById('editPackingOrderId').value.trim();
+            let orderId = document.getElementById('editPackingOrderId').value.trim().toUpperCase();
+            document.getElementById('editPackingOrderId').value = orderId;
             const customerName = document.getElementById('editPackingCustomerName').value.trim();
             const address = document.getElementById('editPackingAddress').value.trim();
             const packingDate = document.getElementById('editPackingDate').value;
@@ -1501,7 +1771,8 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         // Cập nhật đơn hàng
         function updateDelivery() {
             const key = currentEditKey;
-            const orderId = document.getElementById('editOrderId').value.trim();
+            let orderId = document.getElementById('editOrderId').value.trim().toUpperCase();
+            document.getElementById('editOrderId').value = orderId;
             const deliveryDate = document.getElementById('editDeliveryDate').value;
             const delivererName = document.getElementById('editDelivererName').value.trim();
             const customerName = document.getElementById('editCustomerName').value.trim();
@@ -1627,7 +1898,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
                         const list = [];
                         snapshot.forEach(child => {
                             const v = child.val();
-                            if (isDateInRange(v.deliveryDate, fromDate, toDate)) list.push(v);
+                            v.__key = child.key; if (isDateInRange(v.deliveryDate, fromDate, toDate)) list.push(v);
                         });
                         renderDeliveryReportRows(list);
                         spinner.style.display = 'none';
@@ -1695,7 +1966,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
                     const list = [];
                     snapshots.forEach((childSnapshot) => {
                         if (!childSnapshot.exists()) return;
-                        list.push(childSnapshot.val());
+                        const data = childSnapshot.val(); data.__key = childSnapshot.key; list.push(data);
                     });
                     renderDeliveryReportRows(list);
                     spinner.style.display = 'none';
@@ -1712,7 +1983,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
             const tableBody = document.getElementById('reportTableBody');
             tableBody.innerHTML = '';
             if (!list || list.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Không có dữ liệu</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
                 return;
             }
             // Sắp xếp theo ngày giao rồi theo mã đơn để ổn định
@@ -1726,6 +1997,7 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
                     <td>${delivery.delivererName || '-'}</td>
                     <td>${delivery.customerName}</td>
                     <td>${delivery.deliveryAddress}</td>
+                <td><button class="btn btn-danger btn-sm" data-key="${delivery.__key || ''}" data-order-id="${delivery.orderId || ''}" onclick="handleDeleteFromReport(this)" >${delivery.__key ? '<i class="fas fa-trash"></i>' : ''}</button></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -1846,12 +2118,16 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
         }
         
         // Xóa báo cáo giao hàng
-        function clearDeliveryReport() {
+        function clearDeliveryReport(){
+            const ok = requestDeletionAuth('delivery');
+            if(!ok) return;
             document.getElementById('reportTableBody').innerHTML = '';
         }
         
         // Xóa báo cáo đóng hàng
-        function clearPackingReport() {
+        function clearPackingReport(){
+            const ok = requestDeletionAuth('packing');
+            if(!ok) return;
             document.getElementById('packingReportTableBody').innerHTML = '';
         }
         
@@ -1889,5 +2165,150 @@ Cần xem lại kỹ mã đơn hàng, lập phiếu xuất chưa? kiểm tra l�
             XLSX.writeFile(wb, `BaoCaoDongHang_${dateStr}.xlsx`);
         }
     </script>
+
+
+
+
+<!-- Modal cảnh báo trùng mã đơn -->
+<div id="duplicateModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeDuplicateModal()">&times;</span>
+    <h2 style="color:#e74c3c;">CẢNH BÁO TRÙNG MÃ</h2>
+    <p style="white-space: pre-line; margin-top:10px;">
+MÃ NÀY BỊ TRÙNG - XEM LẠI ĐÃ GIAO CHƯA HAY KHÔNG
+Mã: <strong id="dupCode">—</strong>
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeDuplicateModal()">Hủy</button>
+      <button class="btn btn-danger" id="dupProceedBtn">Vẫn lưu</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ==== DUPLICATE CODE WARNING (uses existing modal styles) ====
+(function(){
+  if (window.__dupWarnInjected__) return;
+  window.__dupWarnInjected__ = true;
+
+  let dupProceedHandler = null;
+  window.openDuplicateModal = function(code, onProceed){
+    var codeEl = document.getElementById('dupCode');
+    var modal = document.getElementById('duplicateModal');
+    if (!modal) { console.warn('duplicateModal not found'); return; }
+    if (codeEl) codeEl.textContent = code || '—';
+    dupProceedHandler = (typeof onProceed === 'function') ? onProceed : null;
+    modal.style.display = 'block';
+  };
+  window.closeDuplicateModal = function(){
+    var modal = document.getElementById('duplicateModal');
+    if (modal) modal.style.display = 'none';
+    dupProceedHandler = null;
+  };
+  // Hook proceed button once DOM ready
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('dupProceedBtn');
+    if (btn) {
+      btn.addEventListener('click', function(){
+        if (typeof dupProceedHandler === 'function') { try { dupProceedHandler(); } catch(e) { console.error(e); } }
+        window.closeDuplicateModal();
+      });
+    }
+    // blur check on #orderId if exists
+    var ord = document.getElementById('orderId');
+    if (ord) {
+      ord.addEventListener('blur', async function(){
+        var v = (ord.value || '').trim().toUpperCase();
+        ord.value = v;
+        if (!v) return;
+        try {
+          if (typeof isDuplicateOrderId === 'function') {
+            var dup = await isDuplicateOrderId(v);
+            if (dup) openDuplicateModal(v, null);
+          }
+        } catch (e) { console.error('Duplicate check (blur) error:', e); }
+      });
+    }
+  });
+// ===== Modal xác nhận đóng hàng =====
+function closePackingConfirmModal(){
+  const m = document.getElementById('packingConfirmModal');
+  if (m) m.style.display = 'none';
+}
+
+function openPackingConfirmModal(){
+  // Tiền kiểm form đóng hàng để tránh xác nhận khi thiếu dữ liệu
+  const orderIdEl = document.getElementById('packingOrderId');
+  const customerEl = document.getElementById('packingCustomerName');
+  const addressEl = document.getElementById('packingAddress');
+  const dateEl = document.getElementById('packingDate');
+
+  // Uppercase mã đơn (đồng bộ với logic hiện có)
+  if (orderIdEl && orderIdEl.value) {
+    orderIdEl.value = orderIdEl.value.toUpperCase();
+  }
+
+  if (!orderIdEl.value.trim() || !customerEl.value.trim() || !addressEl.value.trim() || !dateEl.value){
+    alert("Vui lòng điền đầy đủ: Mã đơn, Tên khách hàng, Địa chỉ, Ngày đóng hàng trước khi xác nhận.");
+    return;
+  }
+
+  const m = document.getElementById('packingConfirmModal');
+  if (m){
+    m.style.display = 'block';
+    // Bắt phím ESC để đóng
+    document.addEventListener('keydown', escClosePackingModalOnce, { once: true });
+  }
+}
+
+function escClosePackingModalOnce(e){
+  if (e.key === 'Escape') closePackingConfirmModal();
+}
+
+// Gắn sự kiện nút Đồng ý sau khi DOM sẵn sàng
+document.addEventListener('DOMContentLoaded', function(){
+  const btn = document.getElementById('confirmPackingBtn');
+  if (btn){
+    btn.addEventListener('click', function(){
+      // Đóng modal trước để UX gọn gàng
+      closePackingConfirmModal();
+      // Gọi lại đúng luồng lưu hiện có
+      savePacking(); // (hàm này đã tồn tại và lưu Firebase + alert thành công):contentReference[oaicite:3]{index=3}
+    });
+  }
+});
+
+  // wrap original saveDelivery to add duplicate check but preserve core behavior
+  (function(){
+    var orig = window.saveDelivery;
+    if (typeof orig !== 'function') return; // nothing to wrap
+    window.saveDelivery = async function(){
+      // read common fields
+      var orderIdInput = document.getElementById('orderId');
+      if (orderIdInput) {
+        orderIdInput.value = (orderIdInput.value || '').trim().toUpperCase();
+      }
+      var code = orderIdInput ? orderIdInput.value : '';
+
+      // if fields missing, let original handle validation too
+      try {
+        if (code && typeof isDuplicateOrderId === 'function') {
+          var dup = await isDuplicateOrderId(code);
+          if (dup) {
+            // ask user to proceed
+            return openDuplicateModal(code, function(){ try { orig(); } catch(e){ console.error(e); } });
+          }
+        }
+      } catch(e) {
+        console.error('Duplicate check (save) error:', e);
+      }
+      // no duplicate -> continue original flow
+      return orig();
+    };
+  })();
+})();
+</script>
+
 </body>
 </html>
