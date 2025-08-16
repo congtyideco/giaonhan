@@ -431,11 +431,9 @@
                     <label for="packingDate">Ngày đóng hàng:</label>
                     <input type="date" id="packingDate" required>
                 </div>
-               <button class="btn btn-primary" onclick="confirmPacking()">
-    <i class="fas fa-box"></i> Xác nhận đơn đã đóng hàng xong
-</button>
-
-
+                <button class="btn btn-primary" onclick="savePacking()">
+                    <i class="fas fa-box"></i> Xác nhận đơn đã đóng hàng xong
+                </button>
             </div>
             
             <div class="section-divider"></div>
@@ -849,34 +847,14 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             </div>
         </div>
     </div>
-    <!-- Modal xác nhận đóng hàng -->
-<div id="packingConfirmModal" class="modal" aria-hidden="true">
-  <div class="modal-content" role="dialog" aria-labelledby="packingConfirmTitle" aria-modal="true">
-    <span class="close-btn" onclick="closePackingConfirmModal()" aria-label="Đóng">&times;</span>
-    <h2 id="packingConfirmTitle">XÁC NHẬN HOÀN TẤT ĐÓNG HÀNG</h2>
-    <p style="margin-top:10px; white-space:pre-line;">
-Bạn đã chắc chắn kiểm tra các nội dung sau chưa?
-
-• Số lô và hạn dùng (date) của từng sản phẩm
-• Phiếu xuất kho
-• Đơn hàng đầy đủ chứng từ
-
-Vui lòng đảm bảo đúng thủ tục trước khi xác nhận hoàn thành đóng hàng.
-    </p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closePackingConfirmModal()">Hủy</button>
-      <button class="btn btn-primary" id="confirmPackingBtn">Đồng ý</button>
-    </div>
-  </div>
-</div>
-
+    
     <!-- Modal hướng dẫn -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeHelpModal()">&times;</span>
             <h2>Hướng dẫn sử dụng</h2>
             <div class="help-content">
-                <h3>1. Phần này do: Điều phối khó đảm nhận khai báo - ngoài ra Quản lý kho cũng được tham gia </h3>
+                <h3>1. Phần này do: Điều phối kho đảm nhận khai báo - ngoài ra Quản lý kho vận cũng được tham gia </h3>
                 <ul>
                     <li>Sau khi mọi đơn hàng đã được đóng xong sẵn sàng giao ra kho thì phải khai báo ngay trước khi ra khỏi kho</li>
                     <li>Mã đơn hàng từ đơn hàng ERP in ra và nhập đúng chính xác</li>
@@ -2231,53 +2209,6 @@ Mã: <strong id="dupCode">—</strong>
       });
     }
   });
-// ===== Modal xác nhận đóng hàng =====
-function closePackingConfirmModal(){
-  const m = document.getElementById('packingConfirmModal');
-  if (m) m.style.display = 'none';
-}
-
-function openPackingConfirmModal(){
-  // Tiền kiểm form đóng hàng để tránh xác nhận khi thiếu dữ liệu
-  const orderIdEl = document.getElementById('packingOrderId');
-  const customerEl = document.getElementById('packingCustomerName');
-  const addressEl = document.getElementById('packingAddress');
-  const dateEl = document.getElementById('packingDate');
-
-  // Uppercase mã đơn (đồng bộ với logic hiện có)
-  if (orderIdEl && orderIdEl.value) {
-    orderIdEl.value = orderIdEl.value.toUpperCase();
-  }
-
-  if (!orderIdEl.value.trim() || !customerEl.value.trim() || !addressEl.value.trim() || !dateEl.value){
-    alert("Vui lòng điền đầy đủ: Mã đơn, Tên khách hàng, Địa chỉ, Ngày đóng hàng trước khi xác nhận.");
-    return;
-  }
-
-  const m = document.getElementById('packingConfirmModal');
-  if (m){
-    m.style.display = 'block';
-    // Bắt phím ESC để đóng
-    document.addEventListener('keydown', escClosePackingModalOnce, { once: true });
-  }
-}
-
-function escClosePackingModalOnce(e){
-  if (e.key === 'Escape') closePackingConfirmModal();
-}
-
-// Gắn sự kiện nút Đồng ý sau khi DOM sẵn sàng
-document.addEventListener('DOMContentLoaded', function(){
-  const btn = document.getElementById('confirmPackingBtn');
-  if (btn){
-    btn.addEventListener('click', function(){
-      // Đóng modal trước để UX gọn gàng
-      closePackingConfirmModal();
-      // Gọi lại đúng luồng lưu hiện có
-      savePacking(); // (hàm này đã tồn tại và lưu Firebase + alert thành công):contentReference[oaicite:3]{index=3}
-    });
-  }
-});
 
   // wrap original saveDelivery to add duplicate check but preserve core behavior
   (function(){
@@ -2307,6 +2238,100 @@ document.addEventListener('DOMContentLoaded', function(){
       return orig();
     };
   })();
+})();
+</script>
+
+
+<!-- ===== Modal xác nhận hoàn tất ĐÓNG HÀNG (BỔ SUNG, KHÔNG ĐỔI GIAO DIỆN KHÁC) ===== -->
+<div id="packingConfirmModal" class="modal" aria-hidden="true" style="display:none">
+  <div class="modal-content" role="dialog" aria-labelledby="packingConfirmTitle" aria-modal="true">
+    <span class="close-btn" onclick="(function(){var m=document.getElementById('packingConfirmModal'); if(m) m.style.display='none';})()" aria-label="Đóng">&times;</span>
+    <h2 id="packingConfirmTitle">XÁC NHẬN HOÀN TẤT ĐÓNG HÀNG</h2>
+    <p style="margin-top:10px; white-space:pre-line;">
+Bạn đã chắc chắn kiểm tra số lô, date từng sản phẩm,
+phiếu xuất kho và đơn hàng đầy đủ chưa?
+Vui lòng đảm bảo đúng thủ tục trước khi xác nhận hoàn thành đóng hàng.
+    </p>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+      <input type="checkbox" id="packingChecklistOk"> Tôi đã kiểm tra đủ các mục trên
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="(function(){var m=document.getElementById('packingConfirmModal'); if(m) m.style.display='none';})()">Hủy</button>
+      <button class="btn btn-primary" id="confirmPackingBtn" disabled>Đồng ý</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Monkey-patch savePacking để thêm modal xác nhận (KHÔNG ĐỔI NÚT & UI GỐC) =====
+(function(){
+  // Bật/tắt nút Đồng ý theo checkbox
+  function bindModalControls(){
+    var cb = document.getElementById('packingChecklistOk');
+    var ok = document.getElementById('confirmPackingBtn');
+    if(!cb || !ok) return;
+    cb.addEventListener('change', function(){ ok.disabled = !this.checked; });
+    ok.addEventListener('click', function(){
+      var modal = document.getElementById('packingConfirmModal');
+      if(modal) modal.style.display = 'none';
+      if (typeof window._savePackingOriginal === 'function') {
+        window._savePackingOriginal();
+      }
+    });
+  }
+
+  function openPackingConfirmModal(){
+    // tiền kiểm nhẹ để khỏi mở modal khi thiếu form
+    try{
+      var orderId = (document.getElementById('packingOrderId')||{}).value||'';
+      var customer = (document.getElementById('packingCustomerName')||{}).value||'';
+      var addr = (document.getElementById('packingAddress')||{}).value||'';
+      var date = (document.getElementById('packingDate')||{}).value||'';
+      if(!orderId.trim() || !customer.trim() || !addr.trim() || !date){
+        alert("Vui lòng điền đủ: Mã đơn, Tên khách hàng, Địa chỉ, Ngày đóng hàng trước khi xác nhận.");
+        return;
+      }
+    }catch(e){ /* ignore precheck errors */ }
+    var cb = document.getElementById('packingChecklistOk');
+    var ok = document.getElementById('confirmPackingBtn');
+    if(cb) cb.checked = false;
+    if(ok) ok.disabled = true;
+    var modal = document.getElementById('packingConfirmModal');
+    if(modal){
+      modal.style.display = 'block';
+      // ESC để đóng
+      var escHandler = function(ev){ if(ev.key==='Escape'){ modal.style.display='none'; document.removeEventListener('keydown', escHandler); } };
+      document.addEventListener('keydown', escHandler, { once:true });
+    } else {
+      // fallback: nếu vì lý do gì đó modal không có thì gọi hàm gốc
+      if (typeof window._savePackingOriginal === 'function') window._savePackingOriginal();
+    }
+  }
+
+  // Chỉ patch nếu có hàm gốc
+  if (typeof window.savePacking === 'function') {
+    // Lưu bản gốc
+    window._savePackingOriginal = window.savePacking;
+    // Thay bằng phiên bản có modal
+    window.savePacking = function(){
+      openPackingConfirmModal();
+    };
+    // Bind sau khi DOM sẵn sàng
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindModalControls);
+    } else {
+      bindModalControls();
+    }
+  } else {
+    // Nếu trang load chưa khai báo savePacking, đợi đến khi DOM sẵn sàng rồi patch
+    document.addEventListener('DOMContentLoaded', function(){
+      if (typeof window.savePacking === 'function') {
+        window._savePackingOriginal = window.savePacking;
+        window.savePacking = function(){ openPackingConfirmModal(); };
+        bindModalControls();
+      }
+    });
+  }
 })();
 </script>
 
