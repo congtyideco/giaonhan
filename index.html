@@ -608,7 +608,8 @@
                             <th>Người giao</th>
                             <th>Khách hàng</th>
                             <th>Địa chỉ</th>
-                       <th>Xóa</th> <th>Xóa</th></tr>
+                            <th>Xóa</th>
+                        </tr>
                     </thead>
                     <tbody id="reportTableBody">
                         <!-- Dữ liệu báo cáo sẽ được thêm ở đây -->
@@ -674,6 +675,7 @@
                             <th>Khách hàng</th>
                             <th>Địa chỉ</th>
                             <th>Trạng thái giao</th>
+                            <th>Xóa</th>
                         </tr>
                     </thead>
                     <tbody id="packingReportTableBody">
@@ -684,37 +686,7 @@
         </div>
         
         <!-- Tab Quản lý -->
-        
-
-<!-- ===== (IDECO) Lịch sử xóa báo cáo ===== -->
-<section id="auditLogsSection" style="margin:16px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-    <h2 style="margin:0;">📒 Lịch sử xóa báo cáo</h2>
-    <div style="display:flex; gap:8px;">
-      <button id="refreshAuditLogsBtn">Tải lại</button><button id="deleteSelectedAuditBtn" style="background:#ef4444; color:white; border:none; padding:8px 12px; border-radius:8px;">Xóa đã chọn</button>
-      <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
-        Hiển thị tối đa:
-        <input type="number" id="auditLimitInput" value="200" min="10" max="1000" step="10" style="width:90px;">
-      </label>
-    </div>
-  </div>
-  <div style="overflow:auto; margin-top:10px;">
-    <table style="width:100%; border-collapse: collapse;">
-      <thead>
-        <tr style="background:#f3f4f6;">
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb; width:48px;"><input type="checkbox" id="auditSelectAll"></th>
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Thời gian</th>
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Loại báo cáo</th>
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Tên người xóa</th>
-        </tr>
-      </thead>
-      <tbody id="auditLogsTableBody">
-        <tr><td colspan="3" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-<div class="tab-content" id="management-tab">
+        <div class="tab-content" id="management-tab">
             <div class="card">
                 <h2>Quản lý đơn hàng</h2>
                 
@@ -890,9 +862,9 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     <li>Hệ thống tự động cập nhật các thống kê quan trọng ở mỗi tab</li>
                     <li>Thống kê được reset hàng ngày vào lúc 00:00</li>
                 </ul>
-				 <h3>Xóa báo cáo </h3>
+                <h3>Xóa báo cáo</h3>
                 <ul>
-                    <li>Nhập tên người xoa - password:ideco@2025</li>
+                    <li>Nhập tên người xóa - password: ideco2025</li>
                     <li>Hãy xem xét cẩn thận trước khi xóa</li>
                 </ul>
             </div>
@@ -903,14 +875,41 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
     <div class="help-btn" onclick="openHelpModal()">
         <i class="fas fa-question"></i>
     </div>
-    
+    <div id="auditLogsSection" style="margin:16px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+    <h2 style="margin:0;">📒 Lịch sử xóa báo cáo</h2>
+    <div style="display:flex; gap:8px;">
+      <button id="refreshAuditLogsBtn" class="btn btn-primary">Tải lại</button>
+      <button id="deleteSelectedAuditBtn" class="btn btn-danger">Xóa đã chọn</button>
+      <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
+        Hiển thị tối đa:
+        <input type="number" id="auditLimitInput" value="200" min="10" max="1000" step="10" style="width:90px;">
+      </label>
+    </div>
+  </div>
+  <div style="overflow:auto; margin-top:10px;">
+    <table style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background:#f3f4f6;">
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb; width:48px;"><input type="checkbox" id="auditSelectAll"></th>
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Thời gian</th>
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Loại báo cáo</th>
+          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Tên người xóa</th>
+        </tr>
+      </thead>
+      <tbody id="auditLogsTableBody">
+        <tr><td colspan="4" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
     <script>
         // Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAEAbXHjh2OP-QaZxVA6p3UFl959CK0fHU",
             authDomain: "giaonhan-3d317.firebaseapp.com",
             projectId: "giaonhan-3d317",
-            storageBucket: "giaonhan-3d317.firebasestorage.app",
+            storageBucket: "giaonhan-3d317.appspot.com",
             messagingSenderId: "148651915634",
             appId: "1:148651915634:web:0bca5d3b22c95caa62c5eb",
             measurementId: "G-GYX91BJ9TJ"
@@ -920,216 +919,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        
-
-
-
-
-
-
-
-// ==== Xóa 1 dòng trong Báo cáo giao hàng ====
-function handleDeleteFromReport(btn){
-    try{
-        const key = btn.getAttribute('data-key') || '';
-        const orderId = btn.getAttribute('data-order-id') || '';
-        confirmDeleteDeliveryFromReport(key, orderId);
-    }catch(e){
-        alert("Không thể xử lý xóa: " + e.message);
-    }
-}
-
-function confirmDeleteDeliveryFromReport(key, orderId){
-    function proceed(realKey){
-        const pass = prompt("Nhập mật khẩu để xóa đơn giao hàng này:");
-        if(pass !== "minhtriet1973"){ alert("Sai mật khẩu."); return; }
-        deleteDelivery(realKey, false);
-        setTimeout(generateDeliveryReport, 300);
-    }
-
-    if (key) { proceed(key); return; }
-    if (!orderId){
-        alert("Không xác định được khóa hoặc mã đơn để xóa.");
-        return;
-    }
-    try{
-        database.ref('deliveries').orderByChild('orderId').equalTo(orderId).once('value')
-            .then((snap) => {
-                let found = null;
-                snap.forEach(child => { if(!found){ found = child.key; } });
-                if (!found){
-                    alert("Không tìm thấy đơn để xóa (theo Mã đơn).");
-                    return;
-                }
-                proceed(found);
-            })
-            .catch(err => alert("Lỗi tìm khóa theo Mã đơn: " + err.message));
-    }catch(e){
-        alert("Lỗi truy vấn Firebase: " + e.message);
-    }
-}
-
-// ===== (IDECO) CHỌN & XÓA LỊCH SỬ XÓA BÁO CÁO =====
-function getSelectedAuditIds(){
-    const boxes = document.querySelectorAll('input.auditRowCbx[type="checkbox"]:checked');
-    return Array.from(boxes).map(b => b.value);
-}
-
-
-async function deleteSelectedAuditLogs(){
-    const ids = getSelectedAuditIds();
-    if(ids.length === 0){
-        alert("Chưa chọn bản ghi nào.");
-        return;
-    }
-    const name = prompt("Nhập tên người thực hiện xóa lịch sử:");
-    if(!name){ alert("Bạn chưa nhập tên."); return; }
-    const pass = prompt("Nhập mật khẩu xóa lịch sử:");
-    if(pass !== "minhtriet1973"){
-        alert("Sai mật khẩu.");
-        return;
-    }
-    if(!confirm(`Xóa ${ids.length} dòng lịch sử?`)) return;
-
-    try {
-        // Xóa từng bản ghi
-        const tasks = ids.map(id => database.ref(`/auditLogs/reportClears/${id}`).remove());
-        await Promise.all(tasks);
-        // Ghi log người xóa
-        await database.ref('/auditLogs/auditLogDeletes').push({
-            deleterName: name,
-            deletedCount: ids.length,
-            deletedIds: ids,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-        alert("Đã xóa lịch sử đã chọn.");
-        const limitInput = document.getElementById('auditLimitInput');
-        loadAuditLogs(limitInput ? limitInput.value : 200);
-    } catch(e){
-        alert("Lỗi khi xóa lịch sử: " + e.message);
-        console.error(e);
-    }
-}
-// Hook nút xóa
-
-(function(){
-    const btn = document.getElementById('deleteSelectedAuditBtn');
-    if(btn){
-        btn.addEventListener('click', deleteSelectedAuditLogs);
-    }
-    // Hook chọn tất cả
-    const cbAll = document.getElementById('auditSelectAll');
-    if(cbAll){
-        cbAll.addEventListener('change', function(){
-            document.querySelectorAll('input.auditRowCbx[type="checkbox"]').forEach(cb => cb.checked = cbAll.checked);
-        });
-    }
-})();
-
-// ===== (IDECO) HIỂN THỊ LỊCH SỬ XÓA BÁO CÁO =====
-function formatVNTime(ts){
-    try{
-        const d = new Date(ts);
-        // Fallback if server value comes as number or string
-        return d.toLocaleString('vi-VN');
-    }catch(e){ return String(ts); }
-}
-
-let auditListener = null;
-function loadAuditLogs(limitCount){
-    const tbody = document.getElementById('auditLogsTableBody');
-    if(!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>`;
-
-    // detach previous listener if any
-    if (auditListener) {
-        auditListener.off && auditListener.off();
-        auditListener = null;
-    }
-    const ref = database.ref('/auditLogs/reportClears').orderByChild('timestamp').limitToLast(Number(limitCount)||200);
-    ref.on('value', snap => {
-        const rows = [];
-        const data = snap.val() || {};
-        // Convert to array and sort desc by timestamp
-        const arr = Object.entries(data).map(([k,v]) => ({id:k, ...v}))
-            .sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
-        if(arr.length === 0){
-            tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; color:#6b7280;">Chưa có log xóa nào.</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = '';
-        arr.forEach(item => {
-            const when = item.timestamp ? formatVNTime(item.timestamp) : '-';
-            const typ = item.type === 'delivery' ? 'Giao hàng' : (item.type === 'packing' ? 'Đóng hàng' : (item.type||'-'));
-            const who = item.deleterName || '-';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;"><input class="auditRowCbx" type="checkbox" value="${item.id}"></td>
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${when}</td>
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${typ}</td>
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${who}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    });
-    // store to detach later
-    auditListener = ref;
-}
-
-// Hook controls
-(function(){
-    const btn = document.getElementById('refreshAuditLogsBtn');
-    const input = document.getElementById('auditLimitInput');
-    if(btn){
-        btn.addEventListener('click', () => loadAuditLogs(input ? input.value : 200));
-    }
-    // Auto-load on start (give DOM a tick)
-    setTimeout(() => loadAuditLogs(input ? input.value : 200), 300);
-})();
-
-// ===== (IDECO) BỔ SUNG TÍNH NĂNG THEO YÊU CẦU =====
-
-// 1) Tự động UPPERCASE khi nhập mã đơn hàng
-function attachUppercaseHandler(id){
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.addEventListener('input', function(){
-        const s = this.selectionStart;
-        const e = this.selectionEnd;
-        this.value = this.value.toUpperCase();
-        this.setSelectionRange(s, e);
-    });
-}
-// Gắn khi DOM sẵn sàng (an toàn nếu gọi nhiều lần)
-(function(){
-    const ids = ['packingOrderId','orderId','editOrderId','editPackingOrderId'];
-    ids.forEach(attachUppercaseHandler);
-})();
-
-// 2) Hàm xác thực xóa báo cáo (mật khẩu + lưu tên người xóa)
-function requestDeletionAuth(reportType){
-    const name = prompt("Nhập tên người xóa báo cáo:");
-    if(!name){ alert("Bạn chưa nhập tên."); return null; }
-    const pass = prompt("Nhập mật khẩu xóa báo cáo:");
-    if(pass !== "ideco@2025"){ alert("Sai mật khẩu."); return null; }
-    // Lưu log người xóa
-    try {
-        database.ref('/auditLogs/reportClears').push({
-            type: reportType,
-            deleterName: name,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-    } catch(e){ /* noop */ }
-    return {name};
-}
-
-// 3) Kiểm tra trùng mã đơn khi LƯU GIAO HÀNG
-async function isDuplicateOrderId(orderId){
-    const snap = await database.ref('deliveries').orderByChild('orderId').equalTo(orderId).once('value');
-    return snap.exists();
-}
-
-// Biến toàn cục
+        // Biến toàn cục
         let currentEditKey = null;
         let currentPackingEditKey = null;
         
@@ -1137,7 +927,6 @@ async function isDuplicateOrderId(orderId){
         function confirmStatsLoss() {
             return confirm("Bạn cân nhắc kỹ khi xóa nhé vì sẽ mất dữ liệu thống kê. Nếu không muốn sai , bạn phải khai lại đúng nhé");
         }
-
         
         // Biến để xử lý xác nhận chuyển giao
         let pendingTransfer = { key: null, targetStatus: null };
@@ -1313,7 +1102,6 @@ async function isDuplicateOrderId(orderId){
         
         // Đóng modal hướng dẫn
         function closeHelpModal() {
-
             document.getElementById('helpModal').style.display = 'none';
         }
         
@@ -1975,7 +1763,7 @@ async function isDuplicateOrderId(orderId){
                     <td>${delivery.delivererName || '-'}</td>
                     <td>${delivery.customerName}</td>
                     <td>${delivery.deliveryAddress}</td>
-                <td><button class="btn btn-danger btn-sm" data-key="${delivery.__key || ''}" data-order-id="${delivery.orderId || ''}" onclick="handleDeleteFromReport(this)" >${delivery.__key ? '<i class="fas fa-trash"></i>' : ''}</button></td>
+                    <td><button class="btn btn-danger btn-sm" data-key="${delivery.__key || ''}" data-order-id="${delivery.orderId || ''}" onclick="confirmDeleteDeliveryFromReport('${delivery.__key || ''}', '${delivery.orderId || ''}')"><i class="fas fa-trash"></i></button></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -1997,7 +1785,7 @@ async function isDuplicateOrderId(orderId){
                     
                     if (orderKeys.length === 0) {
                         document.getElementById('packingReportTableBody').innerHTML = 
-                            '<tr><td colspan="6" style="text-align: center;">Không có dữ liệu</td></tr>';
+                            '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
                         spinner.style.display = 'none';
                         return;
                     }
@@ -2051,7 +1839,7 @@ async function isDuplicateOrderId(orderId){
                     
                     if (filteredKeys.length === 0) {
                         document.getElementById('packingReportTableBody').innerHTML = 
-                            '<tr><td colspan="6" style="text-align: center;">Không có dữ liệu</td></tr>';
+                            '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
                         spinner.style.display = 'none';
                         return;
                     }
@@ -2080,6 +1868,7 @@ async function isDuplicateOrderId(orderId){
                             <td>${packing.customerName}</td>
                             <td>${packing.address}</td>
                             <td>${status}</td>
+                            <td><button class="btn btn-danger btn-sm" onclick="confirmDeletePackingFromReport('${packing.orderId || ''}')"><i class="fas fa-trash"></i></button></td>
                         `;
                         
                         tableBody.appendChild(row);
@@ -2090,23 +1879,128 @@ async function isDuplicateOrderId(orderId){
                 .catch((error) => {
                     console.error("Lỗi khi tạo báo cáo:", error);
                     document.getElementById('packingReportTableBody').innerHTML = 
-                        '<tr><td colspan="6" style="text-align: center;">Lỗi khi tải dữ liệu</td></tr>';
+                        '<tr><td colspan="7" style="text-align: center;">Lỗi khi tải dữ liệu</td></tr>';
                     spinner.style.display = 'none';
                 });
         }
         
         // Xóa báo cáo giao hàng
         function clearDeliveryReport(){
-            const ok = requestDeletionAuth('delivery');
-            if(!ok) return;
+            const name = prompt("Nhập tên người xóa báo cáo:");
+            if(!name){ alert("Bạn chưa nhập tên."); return; }
+            const pass = prompt("Nhập mật khẩu xóa báo cáo:");
+            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
+            
+            try {
+                database.ref('/auditLogs/reportClears').push({
+                    type: 'delivery',
+                    deleterName: name,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch(e){ /* noop */ }
+            
             document.getElementById('reportTableBody').innerHTML = '';
         }
         
         // Xóa báo cáo đóng hàng
         function clearPackingReport(){
-            const ok = requestDeletionAuth('packing');
-            if(!ok) return;
+            const name = prompt("Nhập tên người xóa báo cáo:");
+            if(!name){ alert("Bạn chưa nhập tên."); return; }
+            const pass = prompt("Nhập mật khẩu xóa báo cáo:");
+            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
+            
+            try {
+                database.ref('/auditLogs/reportClears').push({
+                    type: 'packing',
+                    deleterName: name,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch(e){ /* noop */ }
+            
             document.getElementById('packingReportTableBody').innerHTML = '';
+        }
+        
+        // Xác nhận xóa từ báo cáo giao hàng
+        function confirmDeleteDeliveryFromReport(key, orderId) {
+            const name = prompt("Nhập tên người xóa:");
+            if(!name){ alert("Bạn chưa nhập tên."); return; }
+            const pass = prompt("Nhập mật khẩu xóa:");
+            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
+            
+            try {
+                database.ref('/auditLogs/reportClears').push({
+                    type: 'delivery',
+                    deleterName: name,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch(e){ /* noop */ }
+            
+            function proceed(realKey){
+                deleteDelivery(realKey, false);
+                setTimeout(generateDeliveryReport, 300);
+            }
+
+            if (key) { 
+                proceed(key); 
+                return; 
+            }
+            
+            if (!orderId){
+                alert("Không xác định được khóa hoặc mã đơn để xóa.");
+                return;
+            }
+            
+            database.ref('deliveries').orderByChild('orderId').equalTo(orderId).once('value')
+                .then((snap) => {
+                    let found = null;
+                    snap.forEach(child => { if(!found){ found = child.key; } });
+                    if (!found){
+                        alert("Không tìm thấy đơn để xóa (theo Mã đơn).");
+                        return;
+                    }
+                    proceed(found);
+                })
+                .catch(err => alert("Lỗi tìm khóa theo Mã đơn: " + err.message));
+        }
+        
+        // Xác nhận xóa từ báo cáo đóng hàng
+        function confirmDeletePackingFromReport(orderId) {
+            if(!orderId){
+                alert("Không xác định được Mã đơn để xóa.");
+                return;
+            }
+            
+            const name = prompt("Nhập tên người xóa:");
+            if(!name){ alert("Bạn chưa nhập tên."); return; }
+            const pass = prompt("Nhập mật khẩu xóa:");
+            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
+            
+            try {
+                database.ref('/auditLogs/reportClears').push({
+                    type: 'packing',
+                    deleterName: name,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch(e){ /* noop */ }
+            
+            database.ref('packings').orderByChild('orderId').equalTo(orderId).once('value')
+                .then((snap) => {
+                    let found = null;
+                    snap.forEach(child => { if(!found){ found = child.key; } });
+                    if (!found){
+                        alert("Không tìm thấy đơn để xóa (theo Mã đơn).");
+                        return;
+                    }
+                    
+                    return database.ref(`/packings/${found}`).remove();
+                })
+                .then(() => {
+                    setTimeout(generatePackingReport, 300);
+                    loadTodayPackings();
+                    loadPackingStats();
+                    alert("Xóa đơn đóng hàng thành công!");
+                })
+                .catch((err) => alert("Lỗi khi xóa: " + err.message));
         }
         
         // Xuất báo cáo giao hàng ra Excel
@@ -2142,198 +2036,177 @@ async function isDuplicateOrderId(orderId){
             
             XLSX.writeFile(wb, `BaoCaoDongHang_${dateStr}.xlsx`);
         }
-    </script>
+		
+		// ===== TỰ ĐỘNG VIẾT HOA MÃ ĐƠN HÀNG =====
+    function setupUppercaseInputs() {
+        // Danh sách các ID input cần tự động viết hoa
+        const inputIds = [
+            'packingOrderId', 'orderId', 
+            'editOrderId', 'editPackingOrderId',
+            'searchOrder'
+        ];
 
-
-
-
-<!-- Modal cảnh báo trùng mã đơn -->
-<div id="duplicateModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeDuplicateModal()">&times;</span>
-    <h2 style="color:#e74c3c;">CẢNH BÁO TRÙNG MÃ</h2>
-    <p style="white-space: pre-line; margin-top:10px;">
-MÃ NÀY BỊ TRÙNG - XEM LẠI ĐÃ GIAO CHƯA HAY KHÔNG
-Mã: <strong id="dupCode">—</strong>
-    </p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeDuplicateModal()">Hủy</button>
-      <button class="btn btn-danger" id="dupProceedBtn">Vẫn lưu</button>
-    </div>
-  </div>
-</div>
-
-
-<script>
-// ==== DUPLICATE CODE WARNING (uses existing modal styles) ====
-(function(){
-  if (window.__dupWarnInjected__) return;
-  window.__dupWarnInjected__ = true;
-
-  let dupProceedHandler = null;
-  window.openDuplicateModal = function(code, onProceed){
-    var codeEl = document.getElementById('dupCode');
-    var modal = document.getElementById('duplicateModal');
-    if (!modal) { console.warn('duplicateModal not found'); return; }
-    if (codeEl) codeEl.textContent = code || '—';
-    dupProceedHandler = (typeof onProceed === 'function') ? onProceed : null;
-    modal.style.display = 'block';
-  };
-  window.closeDuplicateModal = function(){
-    var modal = document.getElementById('duplicateModal');
-    if (modal) modal.style.display = 'none';
-    dupProceedHandler = null;
-  };
-  // Hook proceed button once DOM ready
-  document.addEventListener('DOMContentLoaded', function(){
-    var btn = document.getElementById('dupProceedBtn');
-    if (btn) {
-      btn.addEventListener('click', function(){
-        if (typeof dupProceedHandler === 'function') { try { dupProceedHandler(); } catch(e) { console.error(e); } }
-        window.closeDuplicateModal();
-      });
+        inputIds.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', function() {
+                    // Lưu vị trí con trỏ hiện tại
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    
+                    // Chuyển thành chữ in hoa
+                    this.value = this.value.toUpperCase();
+                    
+                    // Khôi phục vị trí con trỏ
+                    this.setSelectionRange(start, end);
+                });
+            }
+        });
     }
-    // blur check on #orderId if exists
-    var ord = document.getElementById('orderId');
-    if (ord) {
-      ord.addEventListener('blur', async function(){
-        var v = (ord.value || '').trim().toUpperCase();
-        ord.value = v;
-        if (!v) return;
-        try {
-          if (typeof isDuplicateOrderId === 'function') {
-            var dup = await isDuplicateOrderId(v);
-            if (dup) openDuplicateModal(v, null);
-          }
-        } catch (e) { console.error('Duplicate check (blur) error:', e); }
-      });
+
+    // Gọi hàm thiết lập khi DOM tải xong
+    document.addEventListener('DOMContentLoaded', function() {
+        // ... (các lệnh khởi tạo khác giữ nguyên)
+        
+        // Thiết lập tự động viết hoa cho các ô nhập mã đơn
+        setupUppercaseInputs();
+    });
+	// ===== LỊCH SỬ XÓA BÁO CÁO =====
+let auditListener = null;
+
+function formatVNTime(ts) {
+    try {
+        const d = new Date(ts);
+        return d.toLocaleString('vi-VN');
+    } catch(e) { 
+        return String(ts); 
     }
-  });
+}
 
-  // wrap original saveDelivery to add duplicate check but preserve core behavior
-  (function(){
-    var orig = window.saveDelivery;
-    if (typeof orig !== 'function') return; // nothing to wrap
-    window.saveDelivery = async function(){
-      // read common fields
-      var orderIdInput = document.getElementById('orderId');
-      if (orderIdInput) {
-        orderIdInput.value = (orderIdInput.value || '').trim().toUpperCase();
-      }
-      var code = orderIdInput ? orderIdInput.value : '';
+function loadAuditLogs(limitCount) {
+    const tbody = document.getElementById('auditLogsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>`;
 
-      // if fields missing, let original handle validation too
-      try {
-        if (code && typeof isDuplicateOrderId === 'function') {
-          var dup = await isDuplicateOrderId(code);
-          if (dup) {
-            // ask user to proceed
-            return openDuplicateModal(code, function(){ try { orig(); } catch(e){ console.error(e); } });
-          }
+    // Hủy listener cũ nếu có
+    if (auditListener) {
+        auditListener.off();
+        auditListener = null;
+    }
+
+    const ref = database.ref('/auditLogs/reportClears').orderByChild('timestamp').limitToLast(Number(limitCount) || 200);
+    
+    auditListener = ref.on('value', snap => {
+        const rows = [];
+        const data = snap.val() || {};
+        
+        // Chuyển thành mảng và sắp xếp theo thời gian giảm dần
+        const arr = Object.entries(data).map(([k,v]) => ({id:k, ...v}))
+            .sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+        
+        if (arr.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; color:#6b7280;">Chưa có log xóa nào.</td></tr>`;
+            return;
         }
-      } catch(e) {
-        console.error('Duplicate check (save) error:', e);
-      }
-      // no duplicate -> continue original flow
-      return orig();
-    };
-  })();
-})();
-</script>
-
-
-<!-- ===== Modal xác nhận hoàn tất ĐÓNG HÀNG (BỔ SUNG, KHÔNG ĐỔI GIAO DIỆN KHÁC) ===== -->
-<div id="packingConfirmModal" class="modal" aria-hidden="true" style="display:none">
-  <div class="modal-content" role="dialog" aria-labelledby="packingConfirmTitle" aria-modal="true">
-    <span class="close-btn" onclick="(function(){var m=document.getElementById('packingConfirmModal'); if(m) m.style.display='none';})()" aria-label="Đóng">&times;</span>
-    <h2 id="packingConfirmTitle">XÁC NHẬN HOÀN TẤT ĐÓNG HÀNG</h2>
-    <p style="margin-top:10px; white-space:pre-line;">
-Bạn đã chắc chắn kiểm tra số lô, date từng sản phẩm,
-phiếu xuất kho và đơn hàng đầy đủ chưa?
-Vui lòng đảm bảo đúng thủ tục trước khi xác nhận hoàn thành đóng hàng.
-    </p>
-    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-      <input type="checkbox" id="packingChecklistOk"> Tôi đã kiểm tra đủ các mục trên
-    </label>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="(function(){var m=document.getElementById('packingConfirmModal'); if(m) m.style.display='none';})()">Hủy</button>
-      <button class="btn btn-primary" id="confirmPackingBtn" disabled>Đồng ý</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ===== Monkey-patch savePacking để thêm modal xác nhận (KHÔNG ĐỔI NÚT & UI GỐC) =====
-(function(){
-  // Bật/tắt nút Đồng ý theo checkbox
-  function bindModalControls(){
-    var cb = document.getElementById('packingChecklistOk');
-    var ok = document.getElementById('confirmPackingBtn');
-    if(!cb || !ok) return;
-    cb.addEventListener('change', function(){ ok.disabled = !this.checked; });
-    ok.addEventListener('click', function(){
-      var modal = document.getElementById('packingConfirmModal');
-      if(modal) modal.style.display = 'none';
-      if (typeof window._savePackingOriginal === 'function') {
-        window._savePackingOriginal();
-      }
+        
+        tbody.innerHTML = '';
+        arr.forEach(item => {
+            const when = item.timestamp ? formatVNTime(item.timestamp) : '-';
+            const typ = item.type === 'delivery' ? 'Giao hàng' : 
+                        (item.type === 'packing' ? 'Đóng hàng' : (item.type||'-'));
+            const who = item.deleterName || '-';
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;">
+                    <input class="auditRowCbx" type="checkbox" value="${item.id}">
+                </td>
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${when}</td>
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${typ}</td>
+                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${who}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     });
-  }
+}
 
-  function openPackingConfirmModal(){
-    // tiền kiểm nhẹ để khỏi mở modal khi thiếu form
-    try{
-      var orderId = (document.getElementById('packingOrderId')||{}).value||'';
-      var customer = (document.getElementById('packingCustomerName')||{}).value||'';
-      var addr = (document.getElementById('packingAddress')||{}).value||'';
-      var date = (document.getElementById('packingDate')||{}).value||'';
-      if(!orderId.trim() || !customer.trim() || !addr.trim() || !date){
-        alert("Vui lòng điền đủ: Mã đơn, Tên khách hàng, Địa chỉ, Ngày đóng hàng trước khi xác nhận.");
+function getSelectedAuditIds() {
+    const boxes = document.querySelectorAll('input.auditRowCbx[type="checkbox"]:checked');
+    return Array.from(boxes).map(b => b.value);
+}
+
+async function deleteSelectedAuditLogs() {
+    const ids = getSelectedAuditIds();
+    if (ids.length === 0) {
+        alert("Chưa chọn bản ghi nào.");
         return;
-      }
-    }catch(e){ /* ignore precheck errors */ }
-    var cb = document.getElementById('packingChecklistOk');
-    var ok = document.getElementById('confirmPackingBtn');
-    if(cb) cb.checked = false;
-    if(ok) ok.disabled = true;
-    var modal = document.getElementById('packingConfirmModal');
-    if(modal){
-      modal.style.display = 'block';
-      // ESC để đóng
-      var escHandler = function(ev){ if(ev.key==='Escape'){ modal.style.display='none'; document.removeEventListener('keydown', escHandler); } };
-      document.addEventListener('keydown', escHandler, { once:true });
-    } else {
-      // fallback: nếu vì lý do gì đó modal không có thì gọi hàm gốc
-      if (typeof window._savePackingOriginal === 'function') window._savePackingOriginal();
     }
-  }
-
-  // Chỉ patch nếu có hàm gốc
-  if (typeof window.savePacking === 'function') {
-    // Lưu bản gốc
-    window._savePackingOriginal = window.savePacking;
-    // Thay bằng phiên bản có modal
-    window.savePacking = function(){
-      openPackingConfirmModal();
-    };
-    // Bind sau khi DOM sẵn sàng
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', bindModalControls);
-    } else {
-      bindModalControls();
+    
+    const name = prompt("Nhập tên người thực hiện xóa lịch sử:");
+    if (!name) {
+        alert("Bạn chưa nhập tên.");
+        return;
     }
-  } else {
-    // Nếu trang load chưa khai báo savePacking, đợi đến khi DOM sẵn sàng rồi patch
-    document.addEventListener('DOMContentLoaded', function(){
-      if (typeof window.savePacking === 'function') {
-        window._savePackingOriginal = window.savePacking;
-        window.savePacking = function(){ openPackingConfirmModal(); };
-        bindModalControls();
-      }
-    });
-  }
-})();
-</script>
+    
+    const pass = prompt("Nhập mật khẩu xóa lịch sử:");
+    if (pass !== "minhtriet1973") {
+        alert("Sai mật khẩu.");
+        return;
+    }
+    
+    if (!confirm(`Xóa ${ids.length} dòng lịch sử?`)) return;
 
+    try {
+        // Xóa từng bản ghi
+        const tasks = ids.map(id => database.ref(`/auditLogs/reportClears/${id}`).remove());
+        await Promise.all(tasks);
+        
+        // Ghi log người xóa
+        await database.ref('/auditLogs/auditLogDeletes').push({
+            deleterName: name,
+            deletedCount: ids.length,
+            deletedIds: ids,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        alert("Đã xóa lịch sử đã chọn.");
+        const limitInput = document.getElementById('auditLimitInput');
+        loadAuditLogs(limitInput ? limitInput.value : 200);
+    } catch(e) {
+        alert("Lỗi khi xóa lịch sử: " + e.message);
+        console.error(e);
+    }
+}
+
+// Khởi tạo sự kiện khi DOM tải xong
+document.addEventListener('DOMContentLoaded', function() {
+    // ... (các lệnh khởi tạo khác)
+    
+    // Thiết lập lịch sử xóa báo cáo
+    const refreshBtn = document.getElementById('refreshAuditLogsBtn');
+    const deleteBtn = document.getElementById('deleteSelectedAuditBtn');
+    const limitInput = document.getElementById('auditLimitInput');
+    const selectAllCbx = document.getElementById('auditSelectAll');
+    
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => loadAuditLogs(limitInput ? limitInput.value : 200));
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteSelectedAuditLogs);
+    }
+    
+    if (selectAllCbx) {
+        selectAllCbx.addEventListener('change', function() {
+            document.querySelectorAll('input.auditRowCbx[type="checkbox"]').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    }
+    
+    // Tải dữ liệu ban đầu
+    setTimeout(() => loadAuditLogs(limitInput ? limitInput.value : 200), 300);
+});
+    </script>
 </body>
 </html>
