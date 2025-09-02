@@ -67,6 +67,7 @@
         
         .form-group {
             margin-bottom: 15px;
+            position: relative;
         }
         
         label {
@@ -389,6 +390,73 @@
         .help-content ul {
             padding-left: 20px;
         }
+        
+        /* Autocomplete */
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+        
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .autocomplete-active {
+            background-color: var(--primary-color) !important;
+            color: #ffffff;
+        }
+        
+        /* File upload */
+        .file-upload-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .file-upload-container p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .file-upload-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .customer-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -404,6 +472,7 @@
             <div class="tab" data-tab="delivery">Giao hàng</div>
             <div class="tab" data-tab="reports">Báo cáo</div>
             <div class="tab" data-tab="management">Quản lý</div>
+            <div class="tab" data-tab="customer-data">Dữ liệu KH</div>
         </div>
         
         <!-- Tab Đóng hàng -->
@@ -412,11 +481,11 @@
                 <h2>Nhập thông tin đóng hàng</h2>
                 <div class="form-group">
                     <label for="packingOrderId">Mã đơn hàng:</label>
-                    <input type="text" id="packingOrderId" required>
+                    <input type="text" id="packingOrderId" required oninput="this.value = this.value.toUpperCase()">
                 </div>
-                <div class="form-group">
+                <div class="form-group autocomplete">
                     <label for="packingCustomerName">Tên khách hàng:</label>
-                    <input type="text" id="packingCustomerName" required>
+                    <input type="text" id="packingCustomerName" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="packingAddress">Địa chỉ giao:</label>
@@ -483,7 +552,7 @@
                 <h2>Nhập thông tin giao hàng</h2>
                 <div class="form-group">
                     <label for="orderId">Mã đơn hàng:</label>
-                    <input type="text" id="orderId" required>
+                    <input type="text" id="orderId" required oninput="this.value = this.value.toUpperCase()">
                 </div>
                 <div class="form-group">
                     <label for="deliveryDate">Ngày giao hàng:</label>
@@ -493,9 +562,9 @@
                     <label for="delivererName">Tên người giao:</label>
                     <input type="text" id="delivererName" placeholder="Ví dụ: Anh A, Chị B" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group autocomplete">
                     <label for="customerName">Tên khách hàng:</label>
-                    <input type="text" id="customerName" required>
+                    <input type="text" id="customerName" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="deliveryAddress">Địa chỉ giao:</label>
@@ -717,6 +786,41 @@
                 </table>
             </div>
         </div>
+        
+        <!-- Tab Dữ liệu khách hàng -->
+        <div class="tab-content" id="customer-data-tab">
+            <div class="card">
+                <h2>Quản lý dữ liệu khách hàng</h2>
+                
+                <div class="file-upload-container">
+                    <p>Tải lên file Excel chứa dữ liệu khách hàng</p>
+                    <p><small>File Excel cần có các cột: TênKhachHang, DiaChi (hoặc tên cột tương tự)</small></p>
+                    <input type="file" id="excelFile" class="file-input" accept=".xlsx, .xls">
+                    <label for="excelFile" class="file-upload-btn">
+                        <i class="fas fa-upload"></i> Chọn file Excel
+                    </label>
+                    <button class="btn btn-primary" onclick="uploadExcel()" style="margin-left: 10px;">
+                        <i class="fas fa-cloud-upload-alt"></i> Tải lên
+                    </button>
+                </div>
+                
+                <div class="customer-table-container">
+                    <table id="customerTable">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên khách hàng</th>
+                                <th>Địa chỉ</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTableBody">
+                            <!-- Dữ liệu khách hàng sẽ được thêm ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Modal chỉnh sửa giao hàng -->
@@ -727,7 +831,7 @@
             <input type="hidden" id="editKey">
             <div class="form-group">
                 <label for="editOrderId">Mã đơn hàng:</label>
-                <input type="text" id="editOrderId" required>
+                <input type="text" id="editOrderId" required oninput="this.value = this.value.toUpperCase()">
             </div>
             <div class="form-group">
                 <label for="editDeliveryDate">Ngày giao hàng:</label>
@@ -737,9 +841,9 @@
                 <label for="editDelivererName">Tên người giao:</label>
                 <input type="text" id="editDelivererName" required>
             </div>
-            <div class="form-group">
+            <div class="form-group autocomplete">
                 <label for="editCustomerName">Tên khách hàng:</label>
-                <input type="text" id="editCustomerName" required>
+                <input type="text" id="editCustomerName" required autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="editDeliveryAddress">Địa chỉ giao:</label>
@@ -767,11 +871,11 @@
             <input type="hidden" id="editPackingKey">
             <div class="form-group">
                 <label for="editPackingOrderId">Mã đơn hàng:</label>
-                <input type="text" id="editPackingOrderId" required>
+                <input type="text" id="editPackingOrderId" required oninput="this.value = this.value.toUpperCase()">
             </div>
-            <div class="form-group">
+            <div class="form-group autocomplete">
                 <label for="editPackingCustomerName">Tên khách hàng:</label>
-                <input type="text" id="editPackingCustomerName" required>
+                <input type="text" id="editPackingCustomerName" required autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="editPackingAddress">Địa chỉ giao:</label>
@@ -838,315 +942,174 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 <h3>2. Giao hàng -Phần này do phụ trách điều phối vận chuyển- giao hàng hay người hỗ trợ giao hàng thực hiện</h3>
                 <ul>
                     <li>Nhập: Mã đơn, ngày giao, <b>tên người giao</b>, tên khách hàng và địa chỉ</li>
-                    <li>Nhấn nút bản đồ để kiểm tra địa chỉ trên Google Maps</li>
-                    <li>Nhấn "Lưu thông tin" để ghi nhận đơn giao hàng</li>
-                    <li>Khi chuyển từ tab Đóng hàng sang, hệ thống sẽ <b>tự điền</b> Mã đơn, Tên KH, Địa chỉ</li>
+                    <li>Nhấn nút bản đồ để kiểm tra địa chỉ giao hàng trên Google Maps</li>
+                    <li>Chỉ nhấn "Giao xong" khi đơn hàng đã được giao thành công</li>
+                    <li>Đảm bảo thông tin chính xác trước khi lưu</li>
                 </ul>
                 
                 <h3>3. Báo cáo</h3>
                 <ul>
-                    <li>Chọn loại báo cáo: Theo ngày, tuần hoặc tháng</li>
-                    <li>HOẶC dùng bộ lọc <b>Từ ngày</b> và <b>Đến ngày</b> để xem dữ liệu trong một khoảng thời gian bất kỳ</li>
-                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu, "Xuất Excel" để tải</li>
-                    <li>Có 2 loại báo cáo: Báo cáo giao hàng và báo cáo đóng hàng</li>
+                    <li>Chọn loại báo cáo (ngày/tuần/tháng) hoặc khoảng thời gian cụ thể</li>
+                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu</li>
+                    <li>Xuất Excel để tải báo cáo về máy tính</li>
+                    <li>Xóa báo cáo để xóa dữ liệu đã chọn</li>
                 </ul>
                 
                 <h3>4. Quản lý</h3>
                 <ul>
                     <li>Tìm kiếm đơn hàng theo mã đơn hoặc tên khách hàng</li>
-                    <li>Có thể chỉnh sửa hoặc xóa đơn hàng từ kết quả tìm kiếm</li>
-                </ul>
-                
-                <h3>Thống kê</h3>
-                <ul>
-                    <li>Hệ thống tự động cập nhật các thống kê quan trọng ở mỗi tab</li>
-                    <li>Thống kê được reset hàng ngày vào lúc 00:00</li>
-                </ul>
-                <h3>Xóa báo cáo</h3>
-                <ul>
-                    <li>Nhập tên người xóa - password: ideco2025</li>
-                    <li>Hãy xem xét cẩn thận trước khi xóa</li>
+                    <li>Chỉnh sửa hoặc xóa đơn hàng nếu có sai sót</li>
                 </ul>
             </div>
         </div>
     </div>
     
-    <!-- Nút trợ giúp -->
-    <div class="help-btn" onclick="openHelpModal()">
+    <div class="help-btn" onclick="showHelpModal()">
         <i class="fas fa-question"></i>
     </div>
-    <div id="auditLogsSection" style="margin:16px 0; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-    <h2 style="margin:0;">📒 Lịch sử xóa báo cáo</h2>
-    <div style="display:flex; gap:8px;">
-      <button id="refreshAuditLogsBtn" class="btn btn-primary">Tải lại</button>
-      <button id="deleteSelectedAuditBtn" class="btn btn-danger">Xóa đã chọn</button>
-      <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
-        Hiển thị tối đa:
-        <input type="number" id="auditLimitInput" value="200" min="10" max="1000" step="10" style="width:90px;">
-      </label>
-    </div>
-  </div>
-  <div style="overflow:auto; margin-top:10px;">
-    <table style="width:100%; border-collapse: collapse;">
-      <thead>
-        <tr style="background:#f3f4f6;">
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb; width:48px;"><input type="checkbox" id="auditSelectAll"></th>
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Thời gian</th>
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Loại báo cáo</th>
-          <th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Tên người xóa</th>
-        </tr>
-      </thead>
-      <tbody id="auditLogsTableBody">
-        <tr><td colspan="4" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+    
     <script>
-        // Cấu hình Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyAEAbXHjh2OP-QaZxVA6p3UFl959CK0fHU",
-            authDomain: "giaonhan-3d317.firebaseapp.com",
-            projectId: "giaonhan-3d317",
-            storageBucket: "giaonhan-3d317.appspot.com",
-            messagingSenderId: "148651915634",
-            appId: "1:148651915634:web:0bca5d3b22c95caa62c5eb",
-            measurementId: "G-GYX91BJ9TJ"
-        };
+          const firebaseConfig = { 
+  apiKey : "AIzaSyA2Xa3zF8CCOccQhq7nvqooUTabnq5N4qM" , 
+  authDomain : "quanlykho-21f95.firebaseapp.com" , 
+  projectId : "quanlykho-21f95" , 
+  storageBucket : "quanlykho-21f95.firebasestorage.app" , 
+  messagingSenderId : "1082567127195" , 
+  appId : "1:1082567127195:web:dfec69dab7d492c095563e" , 
+  measurementId : "G-RCXEM8VP68" 
+};
         
-        // Khởi tạo Firebase
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
         // Biến toàn cục
         let currentEditKey = null;
         let currentPackingEditKey = null;
+        let customerData = [];
         
-        // Popup cảnh báo mất thống kê khi xóa (GLOBAL)
-        function confirmStatsLoss() {
-            return confirm("Bạn cân nhắc kỹ khi xóa nhé vì sẽ mất dữ liệu thống kê. Nếu không muốn sai , bạn phải khai lại đúng nhé");
-        }
-        
-        // Biến để xử lý xác nhận chuyển giao
-        let pendingTransfer = { key: null, targetStatus: null };
-        
-        // Hàm khởi tạo
+        // Khởi tạo khi trang được tải
         document.addEventListener('DOMContentLoaded', function() {
-            // Đặt ngày mặc định
+            // Thiết lập ngày hiện tại cho các trường ngày
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('deliveryDate').value = today;
-            document.getElementById('reportDate').value = today;
             document.getElementById('packingDate').value = today;
-            const editPackingDateEl = document.getElementById('editPackingDate');
-            if (editPackingDateEl) editPackingDateEl.value = today;
+            document.getElementById('reportDate').value = today;
             document.getElementById('packingReportDate').value = today;
-            document.getElementById('deliveryFromDate').value = today;
-            document.getElementById('deliveryToDate').value = today;
-            document.getElementById('packingFromDate').value = today;
-            document.getElementById('packingToDate').value = today;
             
-            // Load dữ liệu ban đầu
-            loadStats();
-            loadTodayDeliveries();
-            loadPackingStats();
-            loadTodayPackings();
+            // Tải dữ liệu giao hàng
+            loadDeliveryData();
+            loadPackingData();
+            loadCustomerData();
             
-            // Thiết lập sự kiện tab
-            setupTabs();
-            
-            // Thiết lập sự kiện thay đổi loại báo cáo giao hàng
-            document.getElementById('reportType').addEventListener('change', function() {
-                const reportType = this.value;
-                document.getElementById('reportDate').style.display = 'none';
-                document.getElementById('reportWeek').style.display = 'none';
-                document.getElementById('reportMonth').style.display = 'none';
-                
-                if (reportType === 'daily') {
-                    document.getElementById('reportDate').style.display = 'block';
-                } else if (reportType === 'weekly') {
-                    document.getElementById('reportWeek').style.display = 'block';
-                } else if (reportType === 'monthly') {
-                    document.getElementById('reportMonth').style.display = 'block';
-                }
-            });
-            
-            // Thiết lập sự kiện thay đổi loại báo cáo đóng hàng
-            document.getElementById('packingReportType').addEventListener('change', function() {
-                const reportType = this.value;
-                document.getElementById('packingReportDate').style.display = 'none';
-                document.getElementById('packingReportWeek').style.display = 'none';
-                document.getElementById('packingReportMonth').style.display = 'none';
-                
-                if (reportType === 'daily') {
-                    document.getElementById('packingReportDate').style.display = 'block';
-                } else if (reportType === 'weekly') {
-                    document.getElementById('packingReportWeek').style.display = 'block';
-                } else if (reportType === 'monthly') {
-                    document.getElementById('packingReportMonth').style.display = 'block';
-                }
-            });
-            
-            // Kiểm tra reset thống kê hàng ngày
-            checkDailyReset();
-            
-            // Tự động cập nhật dữ liệu khi có thay đổi
-            database.ref('deliveries').on('value', () => {
-                loadTodayDeliveries();
-                loadStats();
-            });
-            
-            database.ref('packings').on('value', () => {
-                loadTodayPackings();
-                loadPackingStats();
-            });
-            
-            database.ref('packingStats').on('value', () => {
-                loadPackingStats();
-            });
-            
-            // Gắn sự kiện cho nút xác nhận chuyển giao
-            const confirmBtn = document.getElementById('confirmTransferBtn');
-            confirmBtn.addEventListener('click', function() {
-                if (!pendingTransfer.key) return;
-                // 1) Cập nhật trạng thái packings như trước
-                proceedToggleDeliveryStatus(pendingTransfer.key, pendingTransfer.targetStatus);
-                // 2) Chuyển dữ liệu sang form giao hàng
-                prefillDeliveryFormFromPacking(pendingTransfer.key);
-                // 3) Đóng popup & reset
-                closeTransferConfirmModal();
-                pendingTransfer = { key: null, targetStatus: null };
-            });
-        });
-        
-        // ========== CÁC HÀM CHUNG ==========
-        
-        // Xem địa chỉ trên bản đồ
-        function viewOnMap(addressFieldId) {
-            const address = document.getElementById(addressFieldId).value.trim();
-            if (!address) {
-                alert("Vui lòng nhập địa chỉ trước khi xem bản đồ");
-                return;
-            }
-            
-            // Mở Google Maps trong tab mới
-            const encodedAddress = encodeURIComponent(address);
-            window.open(`https://www.google.com/maps?q=${encodedAddress}`, '_blank');
-        }
-        
-        // Thiết lập tab
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    activateTab(this.getAttribute('data-tab'));
+            // Thiết lập sự kiện cho các tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    switchTab(tabId);
                 });
             });
-        }
-        
-        // Kích hoạt tab theo id ("packing" | "delivery" | "reports" | "management")
-        function activateTab(tabId) {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            const targetTabButton = document.querySelector(`.tab[data-tab="${tabId}"]`);
-            if (targetTabButton) targetTabButton.classList.add('active');
             
+            // Thiết lập sự kiện cho loại báo cáo
+            document.getElementById('reportType').addEventListener('change', function() {
+                toggleReportInputs(this.value, 'report');
+            });
+            
+            document.getElementById('packingReportType').addEventListener('change', function() {
+                toggleReportInputs(this.value, 'packingReport');
+            });
+            
+            // Thiết lập autocomplete
+            initAutocomplete();
+        });
+        
+        // Chuyển đổi tab
+        function switchTab(tabId) {
+            // Ẩn tất cả các tab content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            const targetContent = document.getElementById(`${tabId}-tab`);
-            if (targetContent) targetContent.classList.add('active');
-        }
-        
-        // Lấy số tuần trong năm
-        function getWeekNumber(date) {
-            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-        }
-        
-        // Kiểm tra reset thống kê hàng ngày
-        function checkDailyReset() {
-            const now = new Date();
-            const lastReset = localStorage.getItem('lastReset');
-            const today = now.toISOString().split('T')[0];
             
-            if (lastReset !== today && now.getHours() === 0 && now.getMinutes() < 1) {
-                localStorage.setItem('lastReset', today);
-                loadStats();
-                loadTodayDeliveries();
-                loadPackingStats();
-                loadTodayPackings();
-            }
+            // Hiển thị tab content được chọn
+            document.getElementById(`${tabId}-tab`).classList.add('active');
             
-            // Kiểm tra mỗi phút
-            setTimeout(checkDailyReset, 60000);
+            // Cập nhật tab active
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                }
+            });
         }
         
-        // Đóng modal giao hàng
-        function closeModal() {
-            document.getElementById('editModal').style.display = 'none';
-            currentEditKey = null;
-        }
-        
-        // Đóng modal đóng hàng
-        function closePackingModal() {
-            document.getElementById('editPackingModal').style.display = 'none';
-            currentPackingEditKey = null;
-        }
-        
-        // Mở modal hướng dẫn
-        function openHelpModal() {
-            document.getElementById('helpModal').style.display = 'block';
-        }
-        
-        // Đóng modal hướng dẫn
-        function closeHelpModal() {
-            document.getElementById('helpModal').style.display = 'none';
-        }
-        
-        // Đóng/Mở modal nhắc nhở chuyển giao
-        function openTransferConfirmModal() {
-            document.getElementById('transferConfirmModal').style.display = 'block';
-        }
-        function closeTransferConfirmModal() {
-            document.getElementById('transferConfirmModal').style.display = 'none';
-        }
-        
-        // ========== CÁC HÀM BỔ TRỢ MỚI ==========
-        // Lấy dữ liệu đóng hàng và tự điền sang form giao hàng
-        function prefillDeliveryFormFromPacking(packingKey) {
-            database.ref(`packings/${packingKey}`).once('value')
-                .then((snapshot) => {
-                    const p = snapshot.val();
-                    if (!p) return;
-                    document.getElementById('orderId').value = p.orderId || '';
-                    document.getElementById('customerName').value = p.customerName || '';
-                    document.getElementById('deliveryAddress').value = p.address || '';
-                    // Ngày giao mặc định hôm nay
-                    document.getElementById('deliveryDate').value = new Date().toISOString().split('T')[0];
-                    // Chuyển sang tab Giao hàng
-                    activateTab('delivery');
-                    alert("Đã chuyển thông tin sang tab Giao hàng.\nVui lòng nhập Tên người giao và nhấn Lưu.");
-                });
-        }
-        
-        // ========== CHỨC NĂNG ĐÓNG HÀNG ==========
-        
-        // Lưu thông tin đóng hàng
-        function savePacking() {
-            let orderId = document.getElementById('packingOrderId').value.trim().toUpperCase();
-            document.getElementById('packingOrderId').value = orderId;
-            const customerName = document.getElementById('packingCustomerName').value.trim();
-            const address = document.getElementById('packingAddress').value.trim();
-            const packingDate = document.getElementById('packingDate').value;
+        // Tự động chuyển đổi mã đơn hàng thành chữ HOA
+        function autoUppercaseOrderId() {
+            const orderIdInput = document.getElementById('orderId');
+            orderIdInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
             
-            if (!orderId || !customerName || !address || !packingDate) {
-                alert("Vui lòng điền đầy đủ thông tin!");
+            const packingOrderIdInput = document.getElementById('packingOrderId');
+            packingOrderIdInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        }
+        
+        // Lưu dữ liệu giao hàng
+        function saveDelivery() {
+            const orderId = document.getElementById('orderId').value.toUpperCase();
+            const deliveryDate = document.getElementById('deliveryDate').value;
+            const delivererName = document.getElementById('delivererName').value;
+            const customerName = document.getElementById('customerName').value;
+            const deliveryAddress = document.getElementById('deliveryAddress').value;
+            
+            if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
+                alert('Vui lòng điền đầy đủ thông tin!');
                 return;
             }
             
-            const packingKey = database.ref().child('packings').push().key;
+            // Hiển thị modal xác nhận
+            showTransferConfirmModal(() => {
+                const deliveryData = {
+                    orderId: orderId,
+                    deliveryDate: deliveryDate,
+                    delivererName: delivererName,
+                    customerName: customerName,
+                    deliveryAddress: deliveryAddress,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Lưu dữ liệu vào Firebase
+                const newDeliveryRef = database.ref('deliveries').push();
+                newDeliveryRef.set(deliveryData)
+                    .then(() => {
+                        alert('Đã lưu thông tin giao hàng thành công!');
+                        // Reset form
+                        document.getElementById('orderId').value = '';
+                        document.getElementById('customerName').value = '';
+                        document.getElementById('deliveryAddress').value = '';
+                        
+                        // Cập nhật bảng dữ liệu
+                        loadDeliveryData();
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi lưu dữ liệu:', error);
+                        alert('Có lỗi xảy ra khi lưu dữ liệu!');
+                    });
+            });
+        }
+        
+        // Lưu dữ liệu đóng hàng
+        function savePacking() {
+            const orderId = document.getElementById('packingOrderId').value.toUpperCase();
+            const customerName = document.getElementById('packingCustomerName').value;
+            const address = document.getElementById('packingAddress').value;
+            const packingDate = document.getElementById('packingDate').value;
+            
+            if (!orderId || !customerName || !address || !packingDate) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
             
             const packingData = {
                 orderId: orderId,
@@ -1154,108 +1117,178 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 address: address,
                 packingDate: packingDate,
                 isDelivered: false,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                timestamp: new Date().toISOString()
             };
             
-            database.ref(`/packings/${packingKey}`).set(packingData)
+            // Lưu dữ liệu vào Firebase
+            const newPackingRef = database.ref('packings').push();
+            newPackingRef.set(packingData)
                 .then(() => {
-                    alert("Đã xác nhận đóng hàng thành công!");
+                    alert('Đã lưu thông tin đóng hàng thành công!');
                     // Reset form
                     document.getElementById('packingOrderId').value = '';
                     document.getElementById('packingCustomerName').value = '';
                     document.getElementById('packingAddress').value = '';
+                    
+                    // Cập nhật bảng dữ liệu
+                    loadPackingData();
                 })
-                .catch((error) => {
-                    alert("Lỗi khi lưu thông tin: " + error.message);
+                .catch(error => {
+                    console.error('Lỗi khi lưu dữ liệu:', error);
+                    alert('Có lỗi xảy ra khi lưu dữ liệu!');
                 });
         }
         
-        // Load thống kê đóng hàng (tất cả đều tính theo *hôm nay* để khớp với bảng hiển thị)
-        function loadPackingStats() {
+        // Tải dữ liệu giao hàng
+        function loadDeliveryData() {
             const today = new Date().toISOString().split('T')[0];
-            database.ref('packings').orderByChild('packingDate').equalTo(today).once('value')
-                .then((snapshot) => {
-                    let todayTotal = 0, todayWaiting = 0, todayDelivered = 0;
-                    if (snapshot.exists()) {
-                        snapshot.forEach(child => {
-                            const v = child.val() || {};
-                            todayTotal += 1;
-                            if (v.isDelivered) todayDelivered += 1;
-                            else todayWaiting += 1;
-                        });
-                    }
-                    document.getElementById('todayPackedCount').textContent = todayTotal;
-                    document.getElementById('waitingDeliveryCount').textContent = todayWaiting;
-                    document.getElementById('deliveredCount').textContent = todayDelivered;
-                })
-                .catch((error) => {
-                    console.error('Lỗi khi tải thống kê đóng hàng hôm nay:', error);
-                    document.getElementById('todayPackedCount').textContent = '—';
-                    document.getElementById('waitingDeliveryCount').textContent = '—';
-                    document.getElementById('deliveredCount').textContent = '—';
-                });
-        }
-        
-        // Load danh sách đóng hàng hôm nay
-        function loadTodayPackings() {
-            const today = new Date().toISOString().split('T')[0];
+            const deliveryTableBody = document.getElementById('deliveryTableBody');
+            deliveryTableBody.innerHTML = '';
             
-            database.ref('packings').orderByChild('packingDate').equalTo(today).once('value')
-                .then((snapshot) => {
-                    const tableBody = document.getElementById('packingTableBody');
-                    tableBody.innerHTML = '';
+            database.ref('deliveries').orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    let todayCount = 0;
+                    let weeklyCount = 0;
+                    let monthlyCount = 0;
                     
-                    if (!snapshot.exists()) {
-                        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Không có đơn hàng nào hôm nay</td></tr>';
-                        return;
-                    }
+                    const now = new Date();
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
                     
-                    snapshot.forEach((childSnapshot) => {
-                        const packing = childSnapshot.val();
-                        const row = document.createElement('tr');
+                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                    
+                    snapshot.forEach(childSnapshot => {
+                        const delivery = childSnapshot.val();
+                        const deliveryDate = new Date(delivery.deliveryDate);
                         
-                        const status = packing.isDelivered ? 
-                            '<span class="packing-status packed">Đã giao</span>' : 
-                            '<span class="packing-status not-packed">Chờ giao</span>';
+                        // Đếm số đơn hôm nay
+                        if (delivery.deliveryDate === today) {
+                            todayCount++;
+                        }
                         
-                        const buttonText = packing.isDelivered ? 
-                            '<i class="fas fa-undo"></i> Chuyển về chờ giao' : 
-                            '<i class="fas fa-truck"></i> Chuyển giao hàng';
+                        // Đếm số đơn tuần này
+                        if (deliveryDate >= startOfWeek) {
+                            weeklyCount++;
+                        }
                         
-                        const buttonClass = packing.isDelivered ? 'btn-warning' : 'btn-primary';
+                        // Đếm số đơn tháng này
+                        if (deliveryDate >= startOfMonth) {
+                            monthlyCount++;
+                        }
                         
-                        row.innerHTML = `
-                            <td>${packing.orderId}</td>
-                            <td>${packing.customerName}</td>
-                            <td>${packing.address}</td>
-                            <td>${status}</td>
-                            <td class="action-btns">
-                                <button class="btn ${buttonClass} btn-sm" onclick="toggleDeliveryStatus('${childSnapshot.key}', ${packing.isDelivered})">
-                                    ${buttonText}
-                                </button>
-                                <button class="btn btn-primary btn-sm" onclick="openEditPackingModal('${childSnapshot.key}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="confirmDeletePacking('${childSnapshot.key}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        `;
-                        
-                        tableBody.appendChild(row);
+                        // Thêm vào bảng nếu là hôm nay
+                        if (delivery.deliveryDate === today) {
+                            const row = deliveryTableBody.insertRow();
+                            row.innerHTML = `
+                                <td>${delivery.orderId}</td>
+                                <td>${delivery.delivererName}</td>
+                                <td>${delivery.customerName}</td>
+                                <td>${delivery.deliveryAddress}</td>
+                                <td class="action-btns">
+                                    <button class="btn btn-sm btn-warning" onclick="editDelivery('${childSnapshot.key}')">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </button>
+                                </td>
+                            `;
+                        }
                     });
+                    
+                    // Cập nhật số liệu thống kê
+                    document.getElementById('todayCount').textContent = todayCount;
+                    document.getElementById('weeklyCount').textContent = weeklyCount;
+                    document.getElementById('monthlyCount').textContent = monthlyCount;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu:', error);
                 });
         }
         
-        // Mở modal chỉnh sửa đóng hàng
-        function openEditPackingModal(key) {
-            currentPackingEditKey = key;
-            const modal = document.getElementById('editPackingModal');
+        // Tải dữ liệu đóng hàng
+        function loadPackingData() {
+            const today = new Date().toISOString().split('T')[0];
+            const packingTableBody = document.getElementById('packingTableBody');
+            packingTableBody.innerHTML = '';
             
-            database.ref(`packings/${key}`).once('value')
-                .then((snapshot) => {
-                    const packing = snapshot.val();
+            database.ref('packings').orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    let todayPackedCount = 0;
+                    let waitingDeliveryCount = 0;
+                    let deliveredCount = 0;
                     
+                    snapshot.forEach(childSnapshot => {
+                        const packing = childSnapshot.val();
+                        
+                        // Đếm số đơn đã đóng hôm nay
+                        if (packing.packingDate === today) {
+                            todayPackedCount++;
+                        }
+                        
+                        // Đếm số đơn chờ giao
+                        if (!packing.isDelivered) {
+                            waitingDeliveryCount++;
+                        } else {
+                            deliveredCount++;
+                        }
+                        
+                        // Thêm vào bảng nếu là hôm nay
+                        if (packing.packingDate === today) {
+                            const row = packingTableBody.insertRow();
+                            row.innerHTML = `
+                                <td>${packing.orderId}</td>
+                                <td>${packing.customerName}</td>
+                                <td>${packing.address}</td>
+                                <td>
+                                    <span class="packing-status ${packing.isDelivered ? 'packed' : 'not-packed'}">
+                                        ${packing.isDelivered ? 'Đã giao' : 'Chờ giao'}
+                                    </span>
+                                </td>
+                                <td class="action-btns">
+                                    <button class="btn btn-sm btn-warning" onclick="editPacking('${childSnapshot.key}')">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </button>
+                                </td>
+                            `;
+                        }
+                    });
+                    
+                    // Cập nhật số liệu thống kê
+                    document.getElementById('todayPackedCount').textContent = todayPackedCount;
+                    document.getElementById('waitingDeliveryCount').textContent = waitingDeliveryCount;
+                    document.getElementById('deliveredCount').textContent = deliveredCount;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu:', error);
+                });
+        }
+        
+        // Chỉnh sửa giao hàng
+        function editDelivery(key) {
+            currentEditKey = key;
+            database.ref('deliveries/' + key).once('value')
+                .then(snapshot => {
+                    const delivery = snapshot.val();
+                    document.getElementById('editKey').value = key;
+                    document.getElementById('editOrderId').value = delivery.orderId;
+                    document.getElementById('editDeliveryDate').value = delivery.deliveryDate;
+                    document.getElementById('editDelivererName').value = delivery.delivererName;
+                    document.getElementById('editCustomerName').value = delivery.customerName;
+                    document.getElementById('editDeliveryAddress').value = delivery.deliveryAddress;
+                    
+                    // Hiển thị modal
+                    document.getElementById('editModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error);
+                });
+        }
+        
+        // Chỉnh sửa đóng hàng
+        function editPacking(key) {
+            currentPackingEditKey = key;
+            database.ref('packings/' + key).once('value')
+                .then(snapshot => {
+                    const packing = snapshot.val();
                     document.getElementById('editPackingKey').value = key;
                     document.getElementById('editPackingOrderId').value = packing.orderId;
                     document.getElementById('editPackingCustomerName').value = packing.customerName;
@@ -1263,22 +1296,60 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     document.getElementById('editPackingDate').value = packing.packingDate;
                     document.getElementById('editPackingStatus').value = packing.isDelivered;
                     
-                    modal.style.display = 'block';
+                    // Hiển thị modal
+                    document.getElementById('editPackingModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error);
                 });
         }
         
-        // Cập nhật thông tin đóng hàng
+        // Cập nhật giao hàng
+        function updateDelivery() {
+            const key = document.getElementById('editKey').value;
+            const orderId = document.getElementById('editOrderId').value.toUpperCase();
+            const deliveryDate = document.getElementById('editDeliveryDate').value;
+            const delivererName = document.getElementById('editDelivererName').value;
+            const customerName = document.getElementById('editCustomerName').value;
+            const deliveryAddress = document.getElementById('editDeliveryAddress').value;
+            
+            if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+            
+            const updatedData = {
+                orderId: orderId,
+                deliveryDate: deliveryDate,
+                delivererName: delivererName,
+                customerName: customerName,
+                deliveryAddress: deliveryAddress,
+                timestamp: new Date().toISOString()
+            };
+            
+            database.ref('deliveries/' + key).update(updatedData)
+                .then(() => {
+                    alert('Đã cập nhật thông tin giao hàng thành công!');
+                    closeModal();
+                    loadDeliveryData();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi cập nhật dữ liệu:', error);
+                    alert('Có lỗi xảy ra khi cập nhật dữ liệu!');
+                });
+        }
+        
+        // Cập nhật đóng hàng
         function updatePacking() {
-            const key = currentPackingEditKey;
-            let orderId = document.getElementById('editPackingOrderId').value.trim().toUpperCase();
-            document.getElementById('editPackingOrderId').value = orderId;
-            const customerName = document.getElementById('editPackingCustomerName').value.trim();
-            const address = document.getElementById('editPackingAddress').value.trim();
+            const key = document.getElementById('editPackingKey').value;
+            const orderId = document.getElementById('editPackingOrderId').value.toUpperCase();
+            const customerName = document.getElementById('editPackingCustomerName').value;
+            const address = document.getElementById('editPackingAddress').value;
             const packingDate = document.getElementById('editPackingDate').value;
             const isDelivered = document.getElementById('editPackingStatus').value === 'true';
             
             if (!orderId || !customerName || !address || !packingDate) {
-                alert("Vui lòng điền đầy đủ thông tin!");
+                alert('Vui lòng điền đầy đủ thông tin!');
                 return;
             }
             
@@ -1288,925 +1359,630 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 address: address,
                 packingDate: packingDate,
                 isDelivered: isDelivered,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                timestamp: new Date().toISOString()
             };
             
-            database.ref(`/packings/${key}`).update(updatedData)
+            database.ref('packings/' + key).update(updatedData)
                 .then(() => {
-                    alert("Cập nhật thông tin đóng hàng thành công!");
+                    alert('Đã cập nhật thông tin đóng hàng thành công!');
                     closePackingModal();
-                    loadTodayPackings();
-                    loadPackingStats();
+                    loadPackingData();
                 })
-                .catch((error) => {
-                    alert("Lỗi khi cập nhật: " + error.message);
+                .catch(error => {
+                    console.error('Lỗi khi cập nhật dữ liệu:', error);
+                    alert('Có lỗi xảy ra khi cập nhật dữ liệu!');
                 });
         }
         
-        // Xác nhận xóa đơn đóng hàng
-        function confirmDeletePacking(key) {
-            if (confirmStatsLoss()) {
-                deletePacking(key);
-            }
-        }
-        
-        // Xóa đơn đóng hàng
-        function deletePacking(key) {
-            database.ref(`/packings/${key}`).remove()
-                .then(() => {
-                    alert("Xóa đơn đóng hàng thành công!");
-                    loadTodayPackings();
-                    loadPackingStats();
-                })
-                .catch((error) => {
-                    alert("Lỗi khi xóa: " + error.message);
-                });
-        }
-        
-        // Chuyển đổi trạng thái giao hàng (có nhắc nhở khi chuyển sang 'Đã giao')
-        function toggleDeliveryStatus(key, currentStatus) {
-            const newStatus = !currentStatus;
-            if (newStatus) {
-                // Mở popup nhắc nhở trước khi chuyển sang 'đã giao' + chuẩn bị chuyển dữ liệu
-                pendingTransfer = { key, targetStatus: newStatus };
-                openTransferConfirmModal();
-            } else {
-                // Chuyển về 'chờ giao' như cũ
-                proceedToggleDeliveryStatus(key, newStatus);
-            }
-        }
-        
-        function proceedToggleDeliveryStatus(key, newStatus) {
-            const statusText = newStatus ? "đã giao" : "chờ giao";
-            database.ref(`/packings/${key}/isDelivered`).set(newStatus)
-                .then(() => {
-                    alert(`Đã cập nhật trạng thái giao hàng sang '${statusText}'!`);
-                    loadTodayPackings();
-                    loadPackingStats();
-                })
-                .catch((error) => {
-                    alert("Lỗi khi cập nhật: " + error.message);
-                });
-        }
-        
-        // ========== CHỨC NĂNG GIAO HÀNG ==========
-        
-        // Lưu thông tin giao hàng
-        function saveDelivery() {
-            const orderId = document.getElementById('orderId').value.trim();
-            const deliveryDate = document.getElementById('deliveryDate').value;
-            const delivererName = document.getElementById('delivererName').value.trim();
-            const customerName = document.getElementById('customerName').value.trim();
-            const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
-            
-            if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
-                alert("Vui lòng điền đầy đủ thông tin!");
-                return;
-            }
-            
-            // Tạo key duy nhất cho mỗi đơn hàng
-            const deliveryKey = database.ref().child('deliveries').push().key;
-            
-            // Tạo object dữ liệu (đã bỏ thời gian, thêm người giao)
-            const deliveryData = {
-                orderId: orderId,
-                deliveryDate: deliveryDate,
-                delivererName: delivererName,
-                customerName: customerName,
-                deliveryAddress: deliveryAddress,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            // Lưu dữ liệu lên Firebase
-            const updates = {};
-            updates[`/deliveries/${deliveryKey}`] = deliveryData;
-            
-            // Cập nhật thống kê
-            const today = new Date().toISOString().split('T')[0];
-            const week = getWeekNumber(new Date());
-            const month = new Date().getMonth();
-            
-            updates[`/stats/daily/${today}/${deliveryKey}`] = true;
-            updates[`/stats/weekly/${week}/${deliveryKey}`] = true;
-            updates[`/stats/monthly/${month}/${deliveryKey}`] = true;
-            
-            database.ref().update(updates)
-                .then(() => {
-                    alert("Đã lưu thông tin giao hàng thành công!");
-                    // Reset form (giữ ngày hôm nay cho tiện)
-                    document.getElementById('orderId').value = '';
-                    document.getElementById('delivererName').value = '';
-                    document.getElementById('customerName').value = '';
-                    document.getElementById('deliveryAddress').value = '';
-                })
-                .catch((error) => {
-                    alert("Lỗi khi lưu thông tin: " + error.message);
-                });
-        }
-        
-        // Load thống kê giao hàng
-        function loadStats() {
-            const today = new Date().toISOString().split('T')[0];
-            const week = getWeekNumber(new Date());
-            const month = new Date().getMonth();
-            
-            // Đếm số đơn hàng hôm nay
-            database.ref(`stats/daily/${today}`).once('value')
-                .then((snapshot) => {
-                    document.getElementById('todayCount').textContent = snapshot.numChildren();
-                });
-            
-            // Đếm số đơn hàng tuần này
-            database.ref(`stats/weekly/${week}`).once('value')
-                .then((snapshot) => {
-                    document.getElementById('weeklyCount').textContent = snapshot.numChildren();
-                });
-            
-            // Đếm số đơn hàng tháng này
-            database.ref(`stats/monthly/${month}`).once('value')
-                .then((snapshot) => {
-                    document.getElementById('monthlyCount').textContent = snapshot.numChildren();
-                });
-        }
-        
-        // Load danh sách giao hàng hôm nay
-        function loadTodayDeliveries() {
-            const today = new Date().toISOString().split('T')[0];
-            
-            database.ref('deliveries').orderByChild('deliveryDate').equalTo(today).once('value')
-                .then((snapshot) => {
-                    const tableBody = document.getElementById('deliveryTableBody');
-                    tableBody.innerHTML = '';
-                    
-                    if (!snapshot.exists()) {
-                        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Không có đơn hàng nào hôm nay</td></tr>';
-                        return;
-                    }
-                    
-                    snapshot.forEach((childSnapshot) => {
-                        const delivery = childSnapshot.val();
-                        const row = document.createElement('tr');
-                        
-                        row.innerHTML = `
-                            <td>${delivery.orderId}</td>
-                            <td>${delivery.delivererName || '-'}</td>
-                            <td>${delivery.customerName}</td>
-                            <td>${delivery.deliveryAddress}</td>
-                            <td class="action-btns">
-                                <button class="btn btn-primary btn-sm" onclick="openEditModal('${childSnapshot.key}')">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="confirmDeleteDelivery('${childSnapshot.key}')">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </button>
-                            </td>
-                        `;
-                        
-                        tableBody.appendChild(row);
-                    });
-                });
-        }
-        
-        // Xác nhận xóa đơn giao hàng
+        // Xác nhận xóa giao hàng
         function confirmDeleteDelivery(key) {
-            if (confirmStatsLoss()) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
                 deleteDelivery(key);
             }
         }
         
-        // Xóa đơn giao hàng
-        function deleteDelivery(key, fromManagement = false) {
-            // Lấy ngày giao của đơn hàng để xóa khỏi thống kê đúng ngày/tuần/tháng
-            database.ref(`deliveries/${key}`).once('value')
-                .then((snap) => {
-                    const delivery = snap.val();
-                    if (!delivery) return;
-                    
-                    const deliveryDate = delivery.deliveryDate;
-                    const deliveryDay = new Date(deliveryDate);
-                    const deliveryWeek = getWeekNumber(deliveryDay);
-                    const deliveryMonth = deliveryDay.getMonth();
-                    
-                    // Xóa đơn hàng và cập nhật thống kê
-                    const updates = {};
-                    updates[`/deliveries/${key}`] = null;
-                    updates[`/stats/daily/${deliveryDate}/${key}`] = null;
-                    updates[`/stats/weekly/${deliveryWeek}/${key}`] = null;
-                    updates[`/stats/monthly/${deliveryMonth}/${key}`] = null;
-                    
-                    return database.ref().update(updates);
-                })
+        // Xác nhận xóa đóng hàng
+        function confirmDeletePacking(key) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+                deletePacking(key);
+            }
+        }
+        
+        // Xóa giao hàng
+        function deleteDelivery(key) {
+            database.ref('deliveries/' + key).remove()
                 .then(() => {
-                    alert("Xóa đơn hàng thành công!");
-                    
-                    if (fromManagement) {
-                        searchOrders(); // Refresh kết quả tìm kiếm
-                    } else {
-                        loadTodayDeliveries(); // Refresh danh sách giao hàng hôm nay
-                    }
-                    
-                    loadStats();
+                    alert('Đã xóa đơn hàng thành công!');
+                    closeModal();
+                    loadDeliveryData();
                 })
-                .catch((error) => {
-                    alert("Lỗi khi xóa: " + error.message);
+                .catch(error => {
+                    console.error('Lỗi khi xóa dữ liệu:', error);
+                    alert('Có lỗi xảy ra khi xóa dữ liệu!');
                 });
         }
         
-        // ========== CHỨC NĂNG QUẢN LÝ ==========
-        
-        // Mở modal chỉnh sửa
-        function openEditModal(key) {
-            currentEditKey = key;
-            const modal = document.getElementById('editModal');
-            
-            database.ref(`deliveries/${key}`).once('value')
-                .then((snapshot) => {
-                    const delivery = snapshot.val();
-                    
-                    document.getElementById('editKey').value = key;
-                    document.getElementById('editOrderId').value = delivery.orderId;
-                    document.getElementById('editDeliveryDate').value = delivery.deliveryDate;
-                    document.getElementById('editDelivererName').value = delivery.delivererName || '';
-                    document.getElementById('editCustomerName').value = delivery.customerName;
-                    document.getElementById('editDeliveryAddress').value = delivery.deliveryAddress;
-                    
-                    modal.style.display = 'block';
+        // Xóa đóng hàng
+        function deletePacking(key) {
+            database.ref('packings/' + key).remove()
+                .then(() => {
+                    alert('Đã xóa đơn hàng thành công!');
+                    closePackingModal();
+                    loadPackingData();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi xóa dữ liệu:', error);
+                    alert('Có lỗi xảy ra khi xóa dữ liệu!');
                 });
         }
         
-        // Cập nhật đơn hàng
-        function updateDelivery() {
-            const key = currentEditKey;
-            let orderId = document.getElementById('editOrderId').value.trim().toUpperCase();
-            document.getElementById('editOrderId').value = orderId;
-            const deliveryDate = document.getElementById('editDeliveryDate').value;
-            const delivererName = document.getElementById('editDelivererName').value.trim();
-            const customerName = document.getElementById('editCustomerName').value.trim();
-            const deliveryAddress = document.getElementById('editDeliveryAddress').value.trim();
+        // Đóng modal
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
+        // Đóng modal đóng hàng
+        function closePackingModal() {
+            document.getElementById('editPackingModal').style.display = 'none';
+        }
+        
+        // Hiển thị modal xác nhận chuyển giao hàng
+        function showTransferConfirmModal(confirmCallback) {
+            const modal = document.getElementById('transferConfirmModal');
+            modal.style.display = 'block';
             
-            if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
-                alert("Vui lòng điền đầy đủ thông tin!");
+            document.getElementById('confirmTransferBtn').onclick = function() {
+                modal.style.display = 'none';
+                confirmCallback();
+            };
+        }
+        
+        // Đóng modal xác nhận chuyển giao hàng
+        function closeTransferConfirmModal() {
+            document.getElementById('transferConfirmModal').style.display = 'none';
+        }
+        
+        // Hiển thị modal hướng dẫn
+        function showHelpModal() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+        
+        // Đóng modal hướng dẫn
+        function closeHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+        
+        // Xem địa chỉ trên bản đồ
+        function viewOnMap(addressFieldId) {
+            const address = document.getElementById(addressFieldId).value;
+            if (!address) {
+                alert('Vui lòng nhập địa chỉ trước!');
                 return;
             }
             
-            const updatedData = {
-                orderId: orderId,
-                deliveryDate: deliveryDate,
-                delivererName: delivererName,
-                customerName: customerName,
-                deliveryAddress: deliveryAddress,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
+            const encodedAddress = encodeURIComponent(address);
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+        }
+        
+        // Tạo báo cáo giao hàng
+        function generateDeliveryReport() {
+            const reportType = document.getElementById('reportType').value;
+            const fromDate = document.getElementById('deliveryFromDate').value;
+            const toDate = document.getElementById('deliveryToDate').value;
             
-            database.ref(`deliveries/${key}`).update(updatedData)
-                .then(() => {
-                    alert("Cập nhật thông tin thành công!");
-                    closeModal();
-                    loadTodayDeliveries();
-                    loadStats();
+            let startDate, endDate;
+            
+            if (fromDate && toDate) {
+                startDate = new Date(fromDate);
+                endDate = new Date(toDate);
+                endDate.setHours(23, 59, 59, 999);
+            } else {
+                // Xử lý theo loại báo cáo
+                const now = new Date();
+                
+                switch (reportType) {
+                    case 'daily':
+                        const reportDate = new Date(document.getElementById('reportDate').value);
+                        startDate = new Date(reportDate);
+                        endDate = new Date(reportDate);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+                        
+                    case 'weekly':
+                        const reportWeek = document.getElementById('reportWeek').value;
+                        startDate = new Date(reportWeek);
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 6);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+                        
+                    case 'monthly':
+                        const reportMonth = document.getElementById('reportMonth').value;
+                        startDate = new Date(reportMonth);
+                        endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+                }
+            }
+            
+            // Hiển thị spinner
+            document.getElementById('reportSpinner').style.display = 'block';
+            
+            database.ref('deliveries').orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    const reportTableBody = document.getElementById('reportTableBody');
+                    reportTableBody.innerHTML = '';
+                    
+                    let count = 0;
+                    snapshot.forEach(childSnapshot => {
+                        const delivery = childSnapshot.val();
+                        const deliveryDate = new Date(delivery.deliveryDate);
+                        
+                        if (deliveryDate >= startDate && deliveryDate <= endDate) {
+                            count++;
+                            const row = reportTableBody.insertRow();
+                            row.innerHTML = `
+                                <td>${count}</td>
+                                <td>${delivery.orderId}</td>
+                                <td>${delivery.deliveryDate}</td>
+                                <td>${delivery.delivererName}</td>
+                                <td>${delivery.customerName}</td>
+                                <td>${delivery.deliveryAddress}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteDelivery('${childSnapshot.key}')">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </td>
+                            `;
+                        }
+                    });
+                    
+                    // Ẩn spinner
+                    document.getElementById('reportSpinner').style.display = 'none';
+                    
+                    if (count === 0) {
+                        reportTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
+                    }
                 })
-                .catch((error) => {
-                    alert("Lỗi khi cập nhật: " + error.message);
+                .catch(error => {
+                    console.error('Lỗi khi tạo báo cáo:', error);
+                    document.getElementById('reportSpinner').style.display = 'none';
                 });
+        }
+        
+        // Tạo báo cáo đóng hàng
+        function generatePackingReport() {
+            const reportType = document.getElementById('packingReportType').value;
+            const fromDate = document.getElementById('packingFromDate').value;
+            const toDate = document.getElementById('packingToDate').value;
+            
+            let startDate, endDate;
+            
+            if (fromDate && toDate) {
+                startDate = new Date(fromDate);
+                endDate = new Date(toDate);
+                endDate.setHours(23, 59, 59, 999);
+            } else {
+                // Xử lý theo loại báo cáo
+                const now = new Date();
+                
+                switch (reportType) {
+                    case 'daily':
+                        const reportDate = new Date(document.getElementById('packingReportDate').value);
+                        startDate = new Date(reportDate);
+                        endDate = new Date(reportDate);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+                        
+                    case 'weekly':
+                        const reportWeek = document.getElementById('packingReportWeek').value;
+                        startDate = new Date(reportWeek);
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 6);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+                        
+                    case 'monthly':
+                        const reportMonth = document.getElementById('packingReportMonth').value;
+                        startDate = new Date(reportMonth);
+                        endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+                }
+            }
+            
+            // Hiển thị spinner
+            document.getElementById('packingReportSpinner').style.display = 'block';
+            
+            database.ref('packings').orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    const reportTableBody = document.getElementById('packingReportTableBody');
+                    reportTableBody.innerHTML = '';
+                    
+                    let count = 0;
+                    snapshot.forEach(childSnapshot => {
+                        const packing = childSnapshot.val();
+                        const packingDate = new Date(packing.packingDate);
+                        
+                        if (packingDate >= startDate && packingDate <= endDate) {
+                            count++;
+                            const row = reportTableBody.insertRow();
+                            row.innerHTML = `
+                                <td>${count}</td>
+                                <td>${packing.orderId}</td>
+                                <td>${packing.packingDate}</td>
+                                <td>${packing.customerName}</td>
+                                <td>${packing.address}</td>
+                                <td>
+                                    <span class="packing-status ${packing.isDelivered ? 'packed' : 'not-packed'}">
+                                        ${packing.isDelivered ? 'Đã giao' : 'Chờ giao'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="confirmDeletePacking('${childSnapshot.key}')">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </td>
+                            `;
+                        }
+                    });
+                    
+                    // Ẩn spinner
+                    document.getElementById('packingReportSpinner').style.display = 'none';
+                    
+                    if (count === 0) {
+                        reportTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tạo báo cáo:', error);
+                    document.getElementById('packingReportSpinner').style.display = 'none';
+                });
+        }
+        
+        // Xóa báo cáo giao hàng
+        function clearDeliveryReport() {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu giao hàng?')) {
+                database.ref('deliveries').remove()
+                    .then(() => {
+                        alert('Đã xóa tất cả dữ liệu giao hàng!');
+                        loadDeliveryData();
+                        document.getElementById('reportTableBody').innerHTML = '';
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi xóa dữ liệu:', error);
+                        alert('Có lỗi xảy ra khi xóa dữ liệu!');
+                    });
+            }
+        }
+        
+        // Xóa báo cáo đóng hàng
+        function clearPackingReport() {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu đóng hàng?')) {
+                database.ref('packings').remove()
+                    .then(() => {
+                        alert('Đã xóa tất cả dữ liệu đóng hàng!');
+                        loadPackingData();
+                        document.getElementById('packingReportTableBody').innerHTML = '';
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi xóa dữ liệu:', error);
+                        alert('Có lỗi xảy ra khi xóa dữ liệu!');
+                    });
+            }
+        }
+        
+        // Xuất Excel giao hàng
+        function exportDeliveryToExcel() {
+            const table = document.getElementById('reportTable');
+            if (table.rows.length <= 1) {
+                alert('Không có dữ liệu để xuất!');
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo giao hàng');
+            XLSX.writeFile(wb, 'bao_cao_giao_hang.xlsx');
+        }
+        
+        // Xuất Excel đóng hàng
+        function exportPackingToExcel() {
+            const table = document.getElementById('packingReportTable');
+            if (table.rows.length <= 1) {
+                alert('Không có dữ liệu để xuất!');
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo đóng hàng');
+            XLSX.writeFile(wb, 'bao_cao_dong_hang.xlsx');
         }
         
         // Tìm kiếm đơn hàng
         function searchOrders() {
-            const searchTerm = document.getElementById('searchOrder').value.trim().toLowerCase();
+            const searchTerm = document.getElementById('searchOrder').value.toLowerCase();
+            const managementTableBody = document.getElementById('managementTableBody');
+            managementTableBody.innerHTML = '';
             
-            if (searchTerm === '') {
-                alert("Vui lòng nhập từ khóa tìm kiếm");
-                return;
-            }
-            
-            database.ref('deliveries').once('value')
-                .then((snapshot) => {
-                    const tableBody = document.getElementById('managementTableBody');
-                    tableBody.innerHTML = '';
-                    
+            database.ref('deliveries').orderByChild('timestamp').once('value')
+                .then(snapshot => {
                     let found = false;
                     
-                    snapshot.forEach((childSnapshot) => {
+                    snapshot.forEach(childSnapshot => {
                         const delivery = childSnapshot.val();
                         
                         if (delivery.orderId.toLowerCase().includes(searchTerm) || 
                             delivery.customerName.toLowerCase().includes(searchTerm)) {
                             found = true;
-                            
-                            const row = document.createElement('tr');
-                            
+                            const row = managementTableBody.insertRow();
                             row.innerHTML = `
                                 <td>${delivery.orderId}</td>
                                 <td>${delivery.deliveryDate}</td>
-                                <td>${delivery.delivererName || '-'}</td>
+                                <td>${delivery.delivererName}</td>
                                 <td>${delivery.customerName}</td>
                                 <td>${delivery.deliveryAddress}</td>
                                 <td class="action-btns">
-                                    <button class="btn btn-primary btn-sm" onclick="openEditModal('${childSnapshot.key}')">
+                                    <button class="btn btn-sm btn-warning" onclick="editDelivery('${childSnapshot.key}')">
                                         <i class="fas fa-edit"></i> Sửa
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteDeliveryFromManagement('${childSnapshot.key}')">
+                                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteDelivery('${childSnapshot.key}')">
                                         <i class="fas fa-trash"></i> Xóa
                                     </button>
                                 </td>
                             `;
-                            
-                            tableBody.appendChild(row);
                         }
                     });
                     
                     if (!found) {
-                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Không tìm thấy đơn hàng phù hợp</td></tr>';
+                        managementTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Không tìm thấy đơn hàng</td></tr>';
                     }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tìm kiếm đơn hàng:', error);
                 });
         }
         
-        // Xác nhận xóa từ trang quản lý
-        function confirmDeleteDeliveryFromManagement(key) {
-            if (confirmStatsLoss()) {
-                deleteDelivery(key, true);
-            }
-        }
-        
-        // ========== CHỨC NĂNG BÁO CÁO ==========
-        
-        // Hỗ trợ so sánh ngày dạng 'YYYY-MM-DD'
-        function isDateInRange(isoDate, fromIso, toIso) {
-            if (!isoDate) return false;
-            if (!fromIso && !toIso) return true;
-            const d = new Date(isoDate);
-            if (fromIso) {
-                const from = new Date(fromIso);
-                if (d < from) return false;
-            }
-            if (toIso) {
-                const to = new Date(toIso);
-                // Bao gồm cả ngày 'to' nên cộng thêm 1 ngày - 1 ms
-                to.setDate(to.getDate() + 1);
-                if (d >= to) return false;
-            }
-            return true;
-        }
-        
-        // Tạo báo cáo giao hàng (hỗ trợ theo loại + khoảng thời gian)
-        function generateDeliveryReport() {
-            const fromDate = document.getElementById('deliveryFromDate').value;
-            const toDate = document.getElementById('deliveryToDate').value;
+        // Chuyển đổi hiển thị input báo cáo
+        function toggleReportInputs(reportType, prefix) {
+            const dateInput = document.getElementById(`${prefix}Date`);
+            const weekInput = document.getElementById(`${prefix}Week`);
+            const monthInput = document.getElementById(`${prefix}Month`);
             
-            const spinner = document.getElementById('reportSpinner');
-            spinner.style.display = 'block';
-            document.getElementById('reportTableBody').innerHTML = '';
-            
-            if (fromDate && toDate) {
-                // Lọc theo khoảng thời gian tùy ý
-                database.ref('deliveries').once('value')
-                    .then((snapshot) => {
-                        const list = [];
-                        snapshot.forEach(child => {
-                            const v = child.val();
-                            v.__key = child.key; if (isDateInRange(v.deliveryDate, fromDate, toDate)) list.push(v);
-                        });
-                        renderDeliveryReportRows(list);
-                        spinner.style.display = 'none';
-                    })
-                    .catch(() => {
-                        document.getElementById('reportTableBody').innerHTML = 
-                            '<tr><td colspan="6" style="text-align: center;">Lỗi khi tải dữ liệu</td></tr>';
-                        spinner.style.display = 'none';
-                    });
-                return;
-            }
-            
-            // Nếu không có from/to -> dùng kiểu cũ: ngày/tuần/tháng
-            const reportType = document.getElementById('reportType').value;
-            let dateValue, refPath;
+            dateInput.style.display = 'none';
+            weekInput.style.display = 'none';
+            monthInput.style.display = 'none';
             
             if (reportType === 'daily') {
-                dateValue = document.getElementById('reportDate').value;
-                if (!dateValue) {
-                    alert("Vui lòng chọn ngày báo cáo");
-                    spinner.style.display = 'none';
-                    return;
-                }
-                refPath = `stats/daily/${dateValue}`;
+                dateInput.style.display = 'block';
             } else if (reportType === 'weekly') {
-                dateValue = document.getElementById('reportWeek').value;
-                if (!dateValue) {
-                    alert("Vui lòng chọn tuần báo cáo");
-                    spinner.style.display = 'none';
-                    return;
-                }
-                const year = dateValue.substring(0, 4);
-                const week = dateValue.substring(6);
-                refPath = `stats/weekly/${week}`; // Giữ logic tuần theo số tuần hiện tại
+                weekInput.style.display = 'block';
             } else if (reportType === 'monthly') {
-                dateValue = document.getElementById('reportMonth').value;
-                if (!dateValue) {
-                    alert("Vui lòng chọn tháng báo cáo");
-                    spinner.style.display = 'none';
+                monthInput.style.display = 'block';
+            }
+        }
+        
+        // Tải dữ liệu khách hàng
+        function loadCustomerData() {
+            database.ref('customers').once('value')
+                .then(snapshot => {
+                    customerData = [];
+                    const customerTableBody = document.getElementById('customerTableBody');
+                    customerTableBody.innerHTML = '';
+                    
+                    let count = 0;
+                    snapshot.forEach(childSnapshot => {
+                        const customer = childSnapshot.val();
+                        customerData.push(customer);
+                        
+                        count++;
+                        const row = customerTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${count}</td>
+                            <td>${customer.name}</td>
+                            <td>${customer.address}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${childSnapshot.key}')">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        `;
+                    });
+                    
+                    if (count === 0) {
+                        customerTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Chưa có dữ liệu khách hàng</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu khách hàng:', error);
+                });
+        }
+        
+        // Xóa khách hàng
+        function deleteCustomer(key) {
+            if (confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
+                database.ref('customers/' + key).remove()
+                    .then(() => {
+                        alert('Đã xóa khách hàng thành công!');
+                        loadCustomerData();
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi xóa khách hàng:', error);
+                        alert('Có lỗi xảy ra khi xóa khách hàng!');
+                    });
+            }
+        }
+        
+        // Tải lên file Excel
+        function uploadExcel() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Vui lòng chọn file Excel!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Lấy sheet đầu tiên
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                if (jsonData.length === 0) {
+                    alert('File Excel không có dữ liệu!');
                     return;
                 }
-                const month = new Date(dateValue).getMonth();
-                refPath = `stats/monthly/${month}`;
-            }
-            
-            database.ref(refPath).once('value')
-                .then((snapshot) => {
-                    const orderKeys = Object.keys(snapshot.val() || {});
-                    if (orderKeys.length === 0) {
-                        document.getElementById('reportTableBody').innerHTML = 
-                            '<tr><td colspan="6" style="text-align: center;">Không có dữ liệu</td></tr>';
-                        spinner.style.display = 'none';
-                        return;
+                
+                // Xác định cột chứa tên và địa chỉ
+                const firstRow = jsonData[0];
+                let nameKey = null;
+                let addressKey = null;
+                
+                for (let key in firstRow) {
+                    if (key.toLowerCase().includes('tên') || key.toLowerCase().includes('name')) {
+                        nameKey = key;
+                    } else if (key.toLowerCase().includes('địa chỉ') || key.toLowerCase().includes('address')) {
+                        addressKey = key;
                     }
+                }
+                
+                if (!nameKey || !addressKey) {
+                    alert('Không tìm thấy cột Tên và Địa chỉ trong file Excel!');
+                    return;
+                }
+                
+                // Lưu dữ liệu vào Firebase
+                let successCount = 0;
+                let errorCount = 0;
+                
+                jsonData.forEach((row, index) => {
+                    const customerName = row[nameKey];
+                    const customerAddress = row[addressKey];
                     
-                    // Lấy thông tin chi tiết các đơn hàng
-                    const promises = orderKeys.map(key => 
-                        database.ref(`deliveries/${key}`).once('value')
-                    );
-                    
-                    return Promise.all(promises);
-                })
-                .then((snapshots) => {
-                    if (!snapshots) return;
-                    const list = [];
-                    snapshots.forEach((childSnapshot) => {
-                        if (!childSnapshot.exists()) return;
-                        const data = childSnapshot.val(); data.__key = childSnapshot.key; list.push(data);
-                    });
-                    renderDeliveryReportRows(list);
-                    spinner.style.display = 'none';
-                })
-                .catch((error) => {
-                    console.error("Lỗi khi tạo báo cáo:", error);
-                    document.getElementById('reportTableBody').innerHTML = 
-                        '<tr><td colspan="6" style="text-align: center;">Lỗi khi tải dữ liệu</td></tr>';
-                    spinner.style.display = 'none';
-                });
-        }
-        
-        function renderDeliveryReportRows(list) {
-            const tableBody = document.getElementById('reportTableBody');
-            tableBody.innerHTML = '';
-            if (!list || list.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
-                return;
-            }
-            // Sắp xếp theo ngày giao rồi theo mã đơn để ổn định
-            list.sort((a, b) => (a.deliveryDate + ' ' + (a.orderId || '')).localeCompare(b.deliveryDate + ' ' + (b.orderId || '')));
-            list.forEach((delivery, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${delivery.orderId}</td>
-                    <td>${delivery.deliveryDate}</td>
-                    <td>${delivery.delivererName || '-'}</td>
-                    <td>${delivery.customerName}</td>
-                    <td>${delivery.deliveryAddress}</td>
-                    <td><button class="btn btn-danger btn-sm" data-key="${delivery.__key || ''}" data-order-id="${delivery.orderId || ''}" onclick="confirmDeleteDeliveryFromReport('${delivery.__key || ''}', '${delivery.orderId || ''}')"><i class="fas fa-trash"></i></button></td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-        
-        // Tạo báo cáo đóng hàng (hỗ trợ theo loại + khoảng thời gian)
-        function generatePackingReport() {
-            const fromDate = document.getElementById('packingFromDate').value;
-            const toDate = document.getElementById('packingToDate').value;
-            
-            const spinner = document.getElementById('packingReportSpinner');
-            spinner.style.display = 'block';
-            document.getElementById('packingReportTableBody').innerHTML = '';
-            
-            database.ref('packings').once('value')
-                .then((snapshot) => {
-                    const allPackings = snapshot.val() || {};
-                    const orderKeys = Object.keys(allPackings);
-                    
-                    if (orderKeys.length === 0) {
-                        document.getElementById('packingReportTableBody').innerHTML = 
-                            '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
-                        spinner.style.display = 'none';
-                        return;
-                    }
-                    
-                    let filteredKeys = orderKeys;
-                    
-                    // Nếu có from/to -> lọc theo khoảng
-                    if (fromDate && toDate) {
-                        filteredKeys = orderKeys.filter(key => {
-                            const p = allPackings[key];
-                            return isDateInRange(p.packingDate, fromDate, toDate);
-                        });
+                    if (customerName && customerAddress) {
+                        const customerData = {
+                            name: customerName,
+                            address: customerAddress,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        database.ref('customers').push(customerData)
+                            .then(() => {
+                                successCount++;
+                            })
+                            .catch(error => {
+                                console.error('Lỗi khi lưu khách hàng:', error);
+                                errorCount++;
+                            })
+                            .finally(() => {
+                                if (index === jsonData.length - 1) {
+                                    alert(`Đã tải lên ${successCount} khách hàng. ${errorCount > 0 ? `Có ${errorCount} lỗi xảy ra.` : ''}`);
+                                    loadCustomerData();
+                                }
+                            });
                     } else {
-                        // Nếu không có from/to -> dùng kiểu cũ: ngày/tuần/tháng
-                        const reportType = document.getElementById('packingReportType').value;
-                        if (reportType === 'daily') {
-                            const dateValue = document.getElementById('packingReportDate').value;
-                            if (!dateValue) {
-                                alert("Vui lòng chọn ngày báo cáo");
-                                spinner.style.display = 'none';
-                                return;
-                            }
-                            filteredKeys = orderKeys.filter(key => allPackings[key].packingDate === dateValue);
-                        } else if (reportType === 'weekly') {
-                            const dateValue = document.getElementById('packingReportWeek').value;
-                            if (!dateValue) {
-                                alert("Vui lòng chọn tuần báo cáo");
-                                spinner.style.display = 'none';
-                                return;
-                            }
-                            const reportWeek = getWeekNumber(new Date(dateValue));
-                            filteredKeys = orderKeys.filter(key => {
-                                const packingDate = new Date(allPackings[key].packingDate);
-                                return getWeekNumber(packingDate) === reportWeek &&
-                                       packingDate.getFullYear() === new Date(dateValue).getFullYear();
-                            });
-                        } else if (reportType === 'monthly') {
-                            const dateValue = document.getElementById('packingReportMonth').value;
-                            if (!dateValue) {
-                                alert("Vui lòng chọn tháng báo cáo");
-                                spinner.style.display = 'none';
-                                return;
-                            }
-                            filteredKeys = orderKeys.filter(key => {
-                                const packingDate = new Date(allPackings[key].packingDate);
-                                return packingDate.getMonth() === new Date(dateValue).getMonth() &&
-                                       packingDate.getFullYear() === new Date(dateValue).getFullYear();
-                            });
+                        errorCount++;
+                    }
+                });
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // Khởi tạo autocomplete
+        function initAutocomplete() {
+            const customerInputs = [
+                document.getElementById('customerName'),
+                document.getElementById('packingCustomerName'),
+                document.getElementById('editCustomerName'),
+                document.getElementById('editPackingCustomerName')
+            ];
+            
+            customerInputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        const val = this.value;
+                        closeAllLists();
+                        
+                        if (!val) return false;
+                        
+                        // Tạo container cho các gợi ý
+                        const list = document.createElement('div');
+                        list.setAttribute('id', this.id + '-autocomplete-list');
+                        list.setAttribute('class', 'autocomplete-items');
+                        this.parentNode.appendChild(list);
+                        
+                        // Lọc dữ liệu khách hàng
+                        const filteredCustomers = customerData.filter(customer => 
+                            customer.name.toLowerCase().includes(val.toLowerCase())
+                        );
+                        
+                        if (filteredCustomers.length === 0) {
+                            list.innerHTML = '<div>Không tìm thấy khách hàng</div>';
+                            return;
                         }
-                    }
-                    
-                    if (filteredKeys.length === 0) {
-                        document.getElementById('packingReportTableBody').innerHTML = 
-                            '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
-                        spinner.style.display = 'none';
-                        return;
-                    }
-                    
-                    // Hiển thị kết quả
-                    const tableBody = document.getElementById('packingReportTableBody');
-                    tableBody.innerHTML = '';
-                    
-                    // Sắp xếp theo ngày đóng
-                    filteredKeys.sort((a, b) => {
-                        const pa = allPackings[a];
-                        const pb = allPackings[b];
-                        return (pa.packingDate + (pa.orderId || '')).localeCompare(pb.packingDate + (pb.orderId || ''));
+                        
+                        // Hiển thị kết quả
+                        filteredCustomers.forEach(customer => {
+                            const item = document.createElement('div');
+                            item.innerHTML = `<strong>${customer.name}</strong> - ${customer.address}`;
+                            item.innerHTML += `<input type='hidden' value='${customer.name}'>`;
+                            
+                            item.addEventListener('click', function() {
+                                input.value = this.getElementsByTagName('input')[0].value;
+                                
+                                // Tìm địa chỉ tương ứng
+                                const customerInfo = customerData.find(c => c.name === customer.name);
+                                if (customerInfo) {
+                                    let addressField;
+                                    
+                                    if (input.id === 'customerName' || input.id === 'editCustomerName') {
+                                        addressField = input.id === 'customerName' ? 
+                                            document.getElementById('deliveryAddress') : 
+                                            document.getElementById('editDeliveryAddress');
+                                    } else {
+                                        addressField = input.id === 'packingCustomerName' ? 
+                                            document.getElementById('packingAddress') : 
+                                            document.getElementById('editPackingAddress');
+                                    }
+                                    
+                                    if (addressField) {
+                                        addressField.value = customerInfo.address;
+                                    }
+                                }
+                                
+                                closeAllLists();
+                            });
+                            
+                            list.appendChild(item);
+                        });
                     });
                     
-                    filteredKeys.forEach((key, index) => {
-                        const packing = allPackings[key];
-                        const status = packing.isDelivered ? "Đã giao" : "Chờ giao";
-                        
-                        const row = document.createElement('tr');
-                        
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${packing.orderId}</td>
-                            <td>${packing.packingDate}</td>
-                            <td>${packing.customerName}</td>
-                            <td>${packing.address}</td>
-                            <td>${status}</td>
-                            <td><button class="btn btn-danger btn-sm" onclick="confirmDeletePackingFromReport('${packing.orderId || ''}')"><i class="fas fa-trash"></i></button></td>
-                        `;
-                        
-                        tableBody.appendChild(row);
+                    // Đóng danh sách khi click ra ngoài
+                    document.addEventListener('click', function(e) {
+                        closeAllLists(e.target);
                     });
-                    
-                    spinner.style.display = 'none';
-                })
-                .catch((error) => {
-                    console.error("Lỗi khi tạo báo cáo:", error);
-                    document.getElementById('packingReportTableBody').innerHTML = 
-                        '<tr><td colspan="7" style="text-align: center;">Lỗi khi tải dữ liệu</td></tr>';
-                    spinner.style.display = 'none';
-                });
-        }
-        
-        // Xóa báo cáo giao hàng
-        function clearDeliveryReport(){
-            const name = prompt("Nhập tên người xóa báo cáo:");
-            if(!name){ alert("Bạn chưa nhập tên."); return; }
-            const pass = prompt("Nhập mật khẩu xóa báo cáo:");
-            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
-            
-            try {
-                database.ref('/auditLogs/reportClears').push({
-                    type: 'delivery',
-                    deleterName: name,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-            } catch(e){ /* noop */ }
-            
-            document.getElementById('reportTableBody').innerHTML = '';
-        }
-        
-        // Xóa báo cáo đóng hàng
-        function clearPackingReport(){
-            const name = prompt("Nhập tên người xóa báo cáo:");
-            if(!name){ alert("Bạn chưa nhập tên."); return; }
-            const pass = prompt("Nhập mật khẩu xóa báo cáo:");
-            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
-            
-            try {
-                database.ref('/auditLogs/reportClears').push({
-                    type: 'packing',
-                    deleterName: name,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-            } catch(e){ /* noop */ }
-            
-            document.getElementById('packingReportTableBody').innerHTML = '';
-        }
-        
-        // Xác nhận xóa từ báo cáo giao hàng
-        function confirmDeleteDeliveryFromReport(key, orderId) {
-            const name = prompt("Nhập tên người xóa:");
-            if(!name){ alert("Bạn chưa nhập tên."); return; }
-            const pass = prompt("Nhập mật khẩu xóa:");
-            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
-            
-            try {
-                database.ref('/auditLogs/reportClears').push({
-                    type: 'delivery',
-                    deleterName: name,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-            } catch(e){ /* noop */ }
-            
-            function proceed(realKey){
-                deleteDelivery(realKey, false);
-                setTimeout(generateDeliveryReport, 300);
-            }
-
-            if (key) { 
-                proceed(key); 
-                return; 
-            }
-            
-            if (!orderId){
-                alert("Không xác định được khóa hoặc mã đơn để xóa.");
-                return;
-            }
-            
-            database.ref('deliveries').orderByChild('orderId').equalTo(orderId).once('value')
-                .then((snap) => {
-                    let found = null;
-                    snap.forEach(child => { if(!found){ found = child.key; } });
-                    if (!found){
-                        alert("Không tìm thấy đơn để xóa (theo Mã đơn).");
-                        return;
-                    }
-                    proceed(found);
-                })
-                .catch(err => alert("Lỗi tìm khóa theo Mã đơn: " + err.message));
-        }
-        
-        // Xác nhận xóa từ báo cáo đóng hàng
-        function confirmDeletePackingFromReport(orderId) {
-            if(!orderId){
-                alert("Không xác định được Mã đơn để xóa.");
-                return;
-            }
-            
-            const name = prompt("Nhập tên người xóa:");
-            if(!name){ alert("Bạn chưa nhập tên."); return; }
-            const pass = prompt("Nhập mật khẩu xóa:");
-            if(pass !== "ideco2025"){ alert("Sai mật khẩu."); return; }
-            
-            try {
-                database.ref('/auditLogs/reportClears').push({
-                    type: 'packing',
-                    deleterName: name,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-            } catch(e){ /* noop */ }
-            
-            database.ref('packings').orderByChild('orderId').equalTo(orderId).once('value')
-                .then((snap) => {
-                    let found = null;
-                    snap.forEach(child => { if(!found){ found = child.key; } });
-                    if (!found){
-                        alert("Không tìm thấy đơn để xóa (theo Mã đơn).");
-                        return;
-                    }
-                    
-                    return database.ref(`/packings/${found}`).remove();
-                })
-                .then(() => {
-                    setTimeout(generatePackingReport, 300);
-                    loadTodayPackings();
-                    loadPackingStats();
-                    alert("Xóa đơn đóng hàng thành công!");
-                })
-                .catch((err) => alert("Lỗi khi xóa: " + err.message));
-        }
-        
-        // Xuất báo cáo giao hàng ra Excel
-        function exportDeliveryToExcel() {
-            const table = document.getElementById('reportTable');
-            if (table.rows.length <= 1) {
-                alert("Không có dữ liệu để xuất Excel");
-                return;
-            }
-            const ws = XLSX.utils.table_to_sheet(table);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "BaoCaoGiaoHang");
-            
-            const today = new Date();
-            const dateStr = today.toISOString().split('T')[0];
-            
-            XLSX.writeFile(wb, `BaoCaoGiaoHang_${dateStr}.xlsx`);
-        }
-        
-        // Xuất báo cáo đóng hàng ra Excel
-        function exportPackingToExcel() {
-            const table = document.getElementById('packingReportTable');
-            if (table.rows.length <= 1) {
-                alert("Không có dữ liệu để xuất Excel");
-                return;
-            }
-            const ws = XLSX.utils.table_to_sheet(table);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "BaoCaoDongHang");
-            
-            const today = new Date();
-            const dateStr = today.toISOString().split('T')[0];
-            
-            XLSX.writeFile(wb, `BaoCaoDongHang_${dateStr}.xlsx`);
-        }
-		
-		// ===== TỰ ĐỘNG VIẾT HOA MÃ ĐƠN HÀNG =====
-    function setupUppercaseInputs() {
-        // Danh sách các ID input cần tự động viết hoa
-        const inputIds = [
-            'packingOrderId', 'orderId', 
-            'editOrderId', 'editPackingOrderId',
-            'searchOrder'
-        ];
-
-        inputIds.forEach(id => {
-            const input = document.getElementById(id);
-            if (input) {
-                input.addEventListener('input', function() {
-                    // Lưu vị trí con trỏ hiện tại
-                    const start = this.selectionStart;
-                    const end = this.selectionEnd;
-                    
-                    // Chuyển thành chữ in hoa
-                    this.value = this.value.toUpperCase();
-                    
-                    // Khôi phục vị trí con trỏ
-                    this.setSelectionRange(start, end);
-                });
-            }
-        });
-    }
-
-    // Gọi hàm thiết lập khi DOM tải xong
-    document.addEventListener('DOMContentLoaded', function() {
-        // ... (các lệnh khởi tạo khác giữ nguyên)
-        
-        // Thiết lập tự động viết hoa cho các ô nhập mã đơn
-        setupUppercaseInputs();
-    });
-	// ===== LỊCH SỬ XÓA BÁO CÁO =====
-let auditListener = null;
-
-function formatVNTime(ts) {
-    try {
-        const d = new Date(ts);
-        return d.toLocaleString('vi-VN');
-    } catch(e) { 
-        return String(ts); 
-    }
-}
-
-function loadAuditLogs(limitCount) {
-    const tbody = document.getElementById('auditLogsTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; color:#6b7280;">Đang tải dữ liệu...</td></tr>`;
-
-    // Hủy listener cũ nếu có
-    if (auditListener) {
-        auditListener.off();
-        auditListener = null;
-    }
-
-    const ref = database.ref('/auditLogs/reportClears').orderByChild('timestamp').limitToLast(Number(limitCount) || 200);
-    
-    auditListener = ref.on('value', snap => {
-        const rows = [];
-        const data = snap.val() || {};
-        
-        // Chuyển thành mảng và sắp xếp theo thời gian giảm dần
-        const arr = Object.entries(data).map(([k,v]) => ({id:k, ...v}))
-            .sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
-        
-        if (arr.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="padding:10px; color:#6b7280;">Chưa có log xóa nào.</td></tr>`;
-            return;
-        }
-        
-        tbody.innerHTML = '';
-        arr.forEach(item => {
-            const when = item.timestamp ? formatVNTime(item.timestamp) : '-';
-            const typ = item.type === 'delivery' ? 'Giao hàng' : 
-                        (item.type === 'packing' ? 'Đóng hàng' : (item.type||'-'));
-            const who = item.deleterName || '-';
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;">
-                    <input class="auditRowCbx" type="checkbox" value="${item.id}">
-                </td>
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${when}</td>
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${typ}</td>
-                <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${who}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    });
-}
-
-function getSelectedAuditIds() {
-    const boxes = document.querySelectorAll('input.auditRowCbx[type="checkbox"]:checked');
-    return Array.from(boxes).map(b => b.value);
-}
-
-async function deleteSelectedAuditLogs() {
-    const ids = getSelectedAuditIds();
-    if (ids.length === 0) {
-        alert("Chưa chọn bản ghi nào.");
-        return;
-    }
-    
-    const name = prompt("Nhập tên người thực hiện xóa lịch sử:");
-    if (!name) {
-        alert("Bạn chưa nhập tên.");
-        return;
-    }
-    
-    const pass = prompt("Nhập mật khẩu xóa lịch sử:");
-    if (pass !== "minhtriet1973") {
-        alert("Sai mật khẩu.");
-        return;
-    }
-    
-    if (!confirm(`Xóa ${ids.length} dòng lịch sử?`)) return;
-
-    try {
-        // Xóa từng bản ghi
-        const tasks = ids.map(id => database.ref(`/auditLogs/reportClears/${id}`).remove());
-        await Promise.all(tasks);
-        
-        // Ghi log người xóa
-        await database.ref('/auditLogs/auditLogDeletes').push({
-            deleterName: name,
-            deletedCount: ids.length,
-            deletedIds: ids,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-        
-        alert("Đã xóa lịch sử đã chọn.");
-        const limitInput = document.getElementById('auditLimitInput');
-        loadAuditLogs(limitInput ? limitInput.value : 200);
-    } catch(e) {
-        alert("Lỗi khi xóa lịch sử: " + e.message);
-        console.error(e);
-    }
-}
-
-// Khởi tạo sự kiện khi DOM tải xong
-document.addEventListener('DOMContentLoaded', function() {
-    // ... (các lệnh khởi tạo khác)
-    
-    // Thiết lập lịch sử xóa báo cáo
-    const refreshBtn = document.getElementById('refreshAuditLogsBtn');
-    const deleteBtn = document.getElementById('deleteSelectedAuditBtn');
-    const limitInput = document.getElementById('auditLimitInput');
-    const selectAllCbx = document.getElementById('auditSelectAll');
-    
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => loadAuditLogs(limitInput ? limitInput.value : 200));
-    }
-    
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', deleteSelectedAuditLogs);
-    }
-    
-    if (selectAllCbx) {
-        selectAllCbx.addEventListener('change', function() {
-            document.querySelectorAll('input.auditRowCbx[type="checkbox"]').forEach(cb => {
-                cb.checked = this.checked;
+                }
             });
-        });
-    }
-    
-    // Tải dữ liệu ban đầu
-    setTimeout(() => loadAuditLogs(limitInput ? limitInput.value : 200), 300);
-});
+        }
+        
+        // Đóng tất cả danh sách autocomplete
+        function closeAllLists(elmnt) {
+            const items = document.getElementsByClassName('autocomplete-items');
+            for (let i = 0; i < items.length; i++) {
+                if (elmnt !== items[i] && elmnt) {
+                    items[i].parentNode.removeChild(items[i]);
+                }
+            }
+        }
+        
+        // Gọi hàm autoUppercaseOrderId để kích hoạt tính năng
+        autoUppercaseOrderId();
     </script>
 </body>
 </html>
