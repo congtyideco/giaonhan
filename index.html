@@ -7,6 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -465,6 +466,18 @@
             overflow-y: auto;
             margin-top: 20px;
         }
+
+        /* CSS cho canvas chữ ký */
+        #signaturePad {
+            width: 100%;
+            height: 200px;
+            cursor: crosshair;
+        }
+        
+        /* Đảm bảo canvas có nền trắng */
+        .modal-content canvas {
+            background-color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -526,9 +539,9 @@
                     <p>đơn sẵn sàng giao</p>
                 </div>
                 <div class="stat-card">
-                    <h3>Đã giao</h3>
+                    <h3>Đã kết thúc</h3>
                     <div class="stat-value" id="deliveredCount">0</div>
-                    <p>đơn đã giao</p>
+                    <p>đơn đã giao xong</p>
                 </div>
             </div>
             
@@ -555,27 +568,37 @@
         <div class="tab-content" id="delivery-tab">
             <div class="card">
                 <h2>Nhập thông tin giao hàng</h2>
+                
+                <div class="form-group autocomplete">
+                    <label for="customerName">Tên khách hàng (Gõ để chọn đơn "Chờ giao"):</label>
+                    <input type="text" id="customerName" required autocomplete="off">
+                </div>
+
                 <div class="form-group">
                     <label for="orderId">Mã đơn hàng:</label>
                     <input type="text" id="orderId" required oninput="this.value = this.value.toUpperCase()">
                 </div>
-                <div class="form-group">
-                    <label for="deliveryDate">Ngày giao hàng:</label>
-                    <input type="date" id="deliveryDate" required>
-                </div>
+
                 <div class="form-group autocomplete">
                     <label for="delivererName">Tên người giao:</label>
                     <div class="input-group">
                          <input type="text" id="delivererName" placeholder="Ví dụ: Anh A, Chị B" required autocomplete="off">
+                         <button class="map-btn" onclick="showSignatureModal('delivererName')" title="Ký tên" style="background-color: #17a2b8;">
+                            <i class="fas fa-signature"></i>
+                        </button>
                          <button class="add-btn" onclick="showAddDelivererModal()" title="Thêm người giao mới">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
+                    <img id="delivererName_sig_preview" src="" alt="Chữ ký" style="display:none; max-height: 100px; border: 1px solid #ddd; margin-top: 10px; background: white;">
+                    <input type="hidden" id="delivererName_sig_data">
                 </div>
-                <div class="form-group autocomplete">
-                    <label for="customerName">Tên khách hàng:</label>
-                    <input type="text" id="customerName" required autocomplete="off">
+
+                <div class="form-group">
+                    <label for="deliveryDate">Ngày giao hàng:</label>
+                    <input type="date" id="deliveryDate" required>
                 </div>
+
                 <div class="form-group">
                     <label for="deliveryAddress">Địa chỉ giao:</label>
                     <div class="address-group">
@@ -585,6 +608,7 @@
                         </button>
                     </div>
                 </div>
+
                 <button class="btn btn-primary" onclick="saveDelivery()">
                     <i class="fas fa-save"></i> Giao xong - hay phải giao mới bấm lưu dữ liệu
                 </button>
@@ -598,7 +622,7 @@
                 </div>
                 <div class="stat-card">
                     <h3>Tuần này</h3>
-                    <div class="stat-value" id="weeklyCount">0</div>
+                    <div class="stat-value"id="weeklyCount">0</div>
                     <p>đơn hàng đã giao</p>
                 </div>
                 <div class="stat-card">
@@ -683,6 +707,7 @@
                             <th>Mã đơn</th>
                             <th>Ngày giao</th>
                             <th>Người giao</th>
+                            <th>Chữ ký</th>
                             <th>Khách hàng</th>
                             <th>Địa chỉ</th>
                             <th>Xóa</th>
@@ -736,6 +761,11 @@
                     <div>
                         <button class="btn btn-danger" onclick="clearPackingReport()">
                             <i class="fas fa-trash"></i> Xóa báo cáo
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn btn-info" onclick="syncAllPackingStatus()">
+                            <i class="fas fa-sync"></i> Đồng bộ trạng thái
                         </button>
                     </div>
                 </div>
@@ -830,27 +860,37 @@
             <span class="close-btn" onclick="closeModal()">×</span>
             <h2>Chỉnh sửa đơn hàng</h2>
             <input type="hidden" id="editKey">
-            <div class="form-group">
-                <label for="editOrderId">Mã đơn hàng:</label>
-                <input type="text" id="editOrderId" required oninput="this.value = this.value.toUpperCase()">
-            </div>
-            <div class="form-group">
-                <label for="editDeliveryDate">Ngày giao hàng:</label>
-                <input type="date" id="editDeliveryDate" required>
-            </div>
-            <div class="form-group autocomplete">
-                <label for="editDelivererName">Tên người giao:</label>
-                 <div class="input-group">
-                    <input type="text" id="editDelivererName" required autocomplete="off">
-                     <button class="add-btn" onclick="showAddDelivererModal()" title="Thêm người giao mới">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
+            
             <div class="form-group autocomplete">
                 <label for="editCustomerName">Tên khách hàng:</label>
                 <input type="text" id="editCustomerName" required autocomplete="off">
             </div>
+
+            <div class="form-group">
+                <label for="editOrderId">Mã đơn hàng:</label>
+                <input type="text" id="editOrderId" required oninput="this.value = this.value.toUpperCase()">
+            </div>
+            
+            <div class="form-group autocomplete">
+                <label for="editDelivererName">Tên người giao:</label>
+                 <div class="input-group">
+                    <input type="text" id="editDelivererName" required autocomplete="off">
+                     <button type="button" class="map-btn" onclick="showSignatureModal('editDelivererName')" title="Ký tên" style="background-color: #17a2b8;">
+                        <i class="fas fa-signature"></i>
+                    </button>
+                     <button type="button" class="add-btn" onclick="showAddDelivererModal()" title="Thêm người giao mới">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <img id="editDelivererName_sig_preview" src="" alt="Chữ ký" style="display:none; max-height: 100px; border: 1px solid #ddd; margin-top: 10px; background: white;">
+                <input type="hidden" id="editDelivererName_sig_data">
+            </div>
+            
+            <div class="form-group">
+                <label for="editDeliveryDate">Ngày giao hàng:</label>
+                <input type="date" id="editDeliveryDate" required>
+            </div>
+            
             <div class="form-group">
                 <label for="editDeliveryAddress">Địa chỉ giao:</label>
                 <div class="address-group">
@@ -860,6 +900,7 @@
                     </button>
                 </div>
             </div>
+
             <button class="btn btn-primary" onclick="updateDelivery()">
                 <i class="fas fa-save"></i> Cập nhật
             </button>
@@ -899,7 +940,7 @@
                 <label for="editPackingStatus">Trạng thái giao hàng:</label>
                 <select id="editPackingStatus" class="form-control">
                     <option value="false">Chờ giao</option>
-                    <option value="true">Đã giao</option>
+                    <option value="true">Đã kết thúc</option>
                 </select>
             </div>
             <button class="btn btn-primary" onclick="updatePacking()">
@@ -917,7 +958,7 @@
              <h2>EM NÊN ĐỌC NỘI DUNG SAU CẨN THẬN !</h2>
             <p style="margin-top:10px; white-space: pre-line;">
 Em đã sẵn sàng mang đi giao hàng hay đơn vị giao đến nhận ngay chưa ? kiểm tra lại lộ trình chưa ?báo nhiêu kiện cho đơn này?
-Khi giao hàng đảm bảo thùng hàng có tem nhãn ghi chính xác không? có hóa đơn, đơn hàng kèm  theo thùng chưa? phải đảm bảo đầy dủ
+Khi giao hàng đảm bảo thùng hàng có tem nhãn ghi chính xác không? có hóa đơn, đơn hàng kèm  theo thùng chưa? phải đảm bảo đầy_đủ
 Nếu đã bấm chuyển giao hàng thì phải hoàn thành giao hàng ngay tránh đơn hàng khai báo bị trôi tin, sót đơn trên ứng dụng
 Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân viên nào đang thu lý giao phải khai thông tin giao mới được giao hàng.
             </p>
@@ -945,6 +986,25 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         </div>
     </div>
     
+    <div id="signatureModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-btn" onclick="closeSignatureModal()">×</span>
+            <h2>Ký tên người giao</h2>
+            <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden; width: 100%; touch-action: none;">
+                <canvas id="signaturePad"></canvas>
+            </div>
+            <div class="modal-actions">
+                 <button class="btn" onclick="clearSignature()" style="background-color: #ccc; margin-right: auto;">
+                    <i class="fas fa-eraser"></i> Xóa
+                 </button>
+                 <button class="btn" onclick="closeSignatureModal()" style="background-color: var(--danger-color); color: white;">Hủy</button>
+                <button class="btn btn-primary" id="saveSignatureBtn">
+                    <i class="fas fa-save"></i> Lưu chữ ký
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeHelpModal()">×</span>
@@ -961,26 +1021,28 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 
                 <h3>2. Giao hàng -Phần này do phụ trách điều phối vận chuyển- giao hàng hay người hỗ trợ giao hàng thực hiện</h3>
                 <ul>
-                    <li>Nhập: Mã đơn, ngày giao, <b>tên người giao</b>, tên khách hàng và địa chỉ</li>
-                    <li>Nhấn nút "+" bên cạnh ô "Tên người giao" để thêm người giao hàng mới vào danh sách.</li>
-                    <li>Khi gõ tên người giao, hệ thống sẽ gợi ý các tên đã lưu.</li>
-                    <li>Nhấn nút bản đồ để kiểm tra địa chỉ giao hàng trên Google Maps</li>
-                    <li>Chỉ nhấn "Giao xong" khi đơn hàng đã được giao thành công</li>
-                    <li>Đảm bảo thông tin chính xác trước khi lưu</li>
+                    <li>Nhấp vào ô "Tên khách hàng" để chọn nhanh từ các đơn hàng "Chờ giao".</li>
+                    <li>Mã đơn hàng và Địa chỉ sẽ được tự động điền.</li>
+                    <li>Nhập/chọn "Tên người giao" và "Ngày giao".</li>
+                    <li>Nhấn nút "Ký tên" (<i class="fas fa-signature"></i>) để ký tên bằng tay.</li>
+                    <li>Chỉ nhấn "Giao xong" khi đơn hàng đã được giao thành công.</li>
+                    <li>Khi "Giao xong", đơn hàng bên tab "Đóng hàng" sẽ tự động cập nhật là "Đã kết thúc".</li>
                 </ul>
                 
                 <h3>3. Báo cáo</h3>
                 <ul>
                     <li>Chọn loại báo cáo (ngày/tuần/tháng) hoặc khoảng thời gian cụ thể</li>
-                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu</li>
-                    <li>Xuất Excel để tải báo cáo về máy tính</li>
+                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu (bao gồm cả chữ ký)</li>
+                    <li>Báo cáo đóng hàng sẽ tự động đối soát với báo cáo giao hàng để hiển thị trạng thái chính xác nhất.</li>
+                    <li>Xuất Excel để tải báo cáo về máy tính (Lưu ý: Excel không xuất được ảnh chữ ký)</li>
                     <li>Xóa báo cáo để xóa dữ liệu đã chọn</li>
+                    <li>Nhấn "Đồng bộ trạng thái" để cập nhật lại trạng thái đóng hàng theo dữ liệu giao hàng mới nhất</li>
                 </ul>
                 
                 <h3>4. Quản lý</h3>
                 <ul>
                     <li>Tìm kiếm đơn hàng theo mã đơn hoặc tên khách hàng</li>
-                    <li>Chỉnh sửa hoặc xóa đơn hàng nếu có sai sót</li>
+                    <li>Chỉnh sửa hoặc xóa đơn hàng nếu có sai sót (có thể sửa cả chữ ký)</li>
                 </ul>
             </div>
         </div>
@@ -991,15 +1053,15 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
     </div>
     
     <script>
-          const firebaseConfig = { 
-  apiKey : "AIzaSyA2Xa3zF8CCOccQhq7nvqooUTabnq5N4qM" , 
-  authDomain : "quanlykho-21f95.firebaseapp.com" , 
-  projectId : "quanlykho-21f95" , 
-  storageBucket : "quanlykho-21f95.appspot.com" , 
-  messagingSenderId : "1082567127195" , 
-  appId : "1:1082567127195:web:dfec69dab7d492c095563e" , 
-  measurementId : "G-RCXEM8VP68" 
-};
+        const firebaseConfig = { 
+            apiKey: "AIzaSyA2Xa3zF8CCOccQhq7nvqooUTabnq5N4qM",
+            authDomain: "quanlykho-21f95.firebaseapp.com",
+            projectId: "quanlykho-21f95",
+            storageBucket: "quanlykho-21f95.appspot.com",
+            messagingSenderId: "1082567127195",
+            appId: "1:1082567127195:web:dfec69dab7d492c095563e",
+            measurementId: "G-RCXEM8VP68"
+        };
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -1009,24 +1071,27 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         let currentEditKey = null;
         let currentPackingEditKey = null;
         let customerData = [];
-        let delivererData = []; // NEW: To store deliverer names
+        let delivererData = []; 
+        let signaturePad = null; 
+        let currentSignatureTarget = null; 
+        let pendingPackingData = []; 
+        let completedDeliveriesSet = new Set();
         
         // Khởi tạo khi trang được tải
         document.addEventListener('DOMContentLoaded', function() {
-            // Thiết lập ngày hiện tại cho các trường ngày
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('deliveryDate').value = today;
             document.getElementById('packingDate').value = today;
             document.getElementById('reportDate').value = today;
             document.getElementById('packingReportDate').value = today;
             
-            // Tải dữ liệu
             loadDeliveryData();
             loadPackingData();
             loadCustomerData();
-            loadDelivererData(); // NEW: Load deliverer data
-            
-            // Thiết lập sự kiện cho các tab
+            loadDelivererData(); 
+            loadPendingPackingData(); 
+            loadCompletedDeliveries(); // Tải danh sách đã giao để đối soát
+
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     const tabId = tab.getAttribute('data-tab');
@@ -1034,7 +1099,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 });
             });
             
-            // Thiết lập sự kiện cho loại báo cáo
             document.getElementById('reportType').addEventListener('change', function() {
                 toggleReportInputs(this.value, 'report');
             });
@@ -1043,12 +1107,11 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 toggleReportInputs(this.value, 'packingReport');
             });
             
-            // Thiết lập autocomplete
-            initCustomerAutocomplete();
-            initDelivererAutocomplete(); // NEW: Init deliverer autocomplete
+            initCustomerAutocomplete(); 
+            initPendingPackingAutocomplete(); 
+            initDelivererAutocomplete(); 
         });
         
-        // Chuyển đổi tab
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(`${tabId}-tab`).classList.add('active');
@@ -1058,7 +1121,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             });
         }
         
-        // Tự động chuyển đổi mã đơn hàng thành chữ HOA
         function autoUppercaseOrderId() {
             ['orderId', 'packingOrderId', 'editOrderId', 'editPackingOrderId'].forEach(id => {
                  const input = document.getElementById(id);
@@ -1068,6 +1130,64 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             });
         }
         
+        // Tải các đơn hàng "Chờ giao"
+        function loadPendingPackingData() {
+            pendingPackingData = [];
+            database.ref('packings').orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    snapshot.forEach(childSnapshot => {
+                        const packing = childSnapshot.val();
+                        if (!packing.isDelivered) {
+                            packing.key = childSnapshot.key; 
+                            pendingPackingData.push(packing);
+                        }
+                    });
+                    pendingPackingData.reverse();
+                })
+                .catch(error => console.error('Lỗi khi tải dữ liệu chờ giao:', error));
+        }
+
+        // Tải toàn bộ danh sách đơn đã giao để đối soát báo cáo (chuyển sang async)
+        async function loadCompletedDeliveries() {
+            completedDeliveriesSet.clear();
+            try {
+                const snapshot = await database.ref('deliveries').once('value');
+                snapshot.forEach(childSnapshot => {
+                    const delivery = childSnapshot.val();
+                    // Tạo một key tổng hợp để kiểm tra (Mã đơn + Tên KH)
+                    const compositeKey = delivery.orderId + "||" + delivery.customerName;
+                    completedDeliveriesSet.add(compositeKey);
+                });
+                console.log(`Đã tải ${completedDeliveriesSet.size} đơn hàng đã giao để đối soát.`);
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu giao hàng đã hoàn tất:', error);
+            }
+        }
+
+        // Cập nhật trạng thái đóng hàng (kiểm tra chéo Mã đơn + Tên KH)
+        function updatePackingStatus(orderId, customerName) {
+            database.ref('packings').orderByChild('orderId').equalTo(orderId).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach(childSnapshot => {
+                            const packing = childSnapshot.val();
+                            
+                            if (packing.customerName === customerName) {
+                                database.ref('packings/' + childSnapshot.key).update({ isDelivered: true })
+                                    .then(() => {
+                                        loadPackingData(); 
+                                        loadPendingPackingData(); 
+                                    })
+                                    .catch(error => console.error('Lỗi khi cập nhật trạng thái đóng hàng:', error));
+                            } else {
+                                console.warn(`Mã đơn hàng ${orderId} khớp nhưng tên KH không khớp. Giao hàng: ${customerName}, Đóng gói: ${packing.customerName}`);
+                            }
+                        });
+                    }
+                })
+                .catch(error => console.error('Lỗi khi tìm đơn hàng đóng gói:', error));
+        }
+
         // Lưu dữ liệu giao hàng
         function saveDelivery() {
             const orderId = document.getElementById('orderId').value.toUpperCase();
@@ -1075,6 +1195,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             const delivererName = document.getElementById('delivererName').value;
             const customerName = document.getElementById('customerName').value;
             const deliveryAddress = document.getElementById('deliveryAddress').value;
+            const delivererSignature = document.getElementById('delivererName_sig_data').value;
             
             if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
                 alert('Vui lòng điền đầy đủ thông tin!');
@@ -1084,17 +1205,29 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             showTransferConfirmModal(() => {
                 const deliveryData = {
                     orderId, deliveryDate, delivererName, customerName, deliveryAddress,
+                    delivererSignature: delivererSignature || null, 
                     timestamp: new Date().toISOString()
                 };
                 
                 database.ref('deliveries').push().set(deliveryData)
                     .then(() => {
                         alert('Đã lưu thông tin giao hàng thành công!');
+                        
+                        updatePackingStatus(orderId, customerName);
+
+                        const compositeKey = orderId + "||" + customerName;
+                        completedDeliveriesSet.add(compositeKey);
+
+                        // Reset form
                         document.getElementById('orderId').value = '';
                         document.getElementById('customerName').value = '';
                         document.getElementById('deliveryAddress').value = '';
                         document.getElementById('delivererName').value = '';
-                        loadDeliveryData();
+                        document.getElementById('delivererName_sig_data').value = '';
+                        document.getElementById('delivererName_sig_preview').src = '';
+                        document.getElementById('delivererName_sig_preview').style.display = 'none';
+                        
+                        loadDeliveryData(); 
                     })
                     .catch(error => alert('Có lỗi xảy ra khi lưu dữ liệu: ' + error.message));
             });
@@ -1125,6 +1258,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     document.getElementById('packingCustomerName').value = '';
                     document.getElementById('packingAddress').value = '';
                     loadPackingData();
+                    loadPendingPackingData(); 
                 })
                 .catch(error => alert('Có lỗi xảy ra khi lưu dữ liệu: ' + error.message));
         }
@@ -1191,7 +1325,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                         if (packing.packingDate === today) {
                             const row = packingTableBody.insertRow();
                             const statusClass = packing.isDelivered ? 'packed' : 'not-packed';
-                            const statusText = packing.isDelivered ? 'Đã giao' : 'Chờ giao';
+                            const statusText = packing.isDelivered ? 'Đã kết thúc' : 'Chờ giao';
                             row.innerHTML = `
                                 <td>${packing.orderId}</td>
                                 <td>${packing.customerName}</td>
@@ -1212,7 +1346,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => console.error('Lỗi khi tải dữ liệu đóng hàng:', error));
         }
 
-        // NEW: Tải dữ liệu người giao hàng
+        // Tải dữ liệu người giao hàng
         function loadDelivererData() {
             database.ref('deliverers').once('value')
                 .then(snapshot => {
@@ -1231,11 +1365,24 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .then(snapshot => {
                     const delivery = snapshot.val();
                     document.getElementById('editKey').value = key;
-                    document.getElementById('editOrderId').value = delivery.orderId;
-                    document.getElementById('editDeliveryDate').value = delivery.deliveryDate;
-                    document.getElementById('editDelivererName').value = delivery.delivererName;
                     document.getElementById('editCustomerName').value = delivery.customerName;
+                    document.getElementById('editOrderId').value = delivery.orderId;
+                    document.getElementById('editDelivererName').value = delivery.delivererName;
+                    document.getElementById('editDeliveryDate').value = delivery.deliveryDate;
                     document.getElementById('editDeliveryAddress').value = delivery.deliveryAddress;
+                    
+                    const dataInput = document.getElementById('editDelivererName_sig_data');
+                    const previewImg = document.getElementById('editDelivererName_sig_preview');
+                    if (delivery.delivererSignature) {
+                        dataInput.value = delivery.delivererSignature;
+                        previewImg.src = delivery.delivererSignature;
+                        previewImg.style.display = 'block';
+                    } else {
+                        dataInput.value = '';
+                        previewImg.src = '';
+                        previewImg.style.display = 'none';
+                    }
+
                     document.getElementById('editModal').style.display = 'block';
                 })
                 .catch(error => console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error));
@@ -1261,11 +1408,12 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         // Cập nhật giao hàng
         function updateDelivery() {
             const key = document.getElementById('editKey').value;
-            const orderId = document.getElementById('editOrderId').value.toUpperCase();
-            const deliveryDate = document.getElementById('editDeliveryDate').value;
-            const delivererName = document.getElementById('editDelivererName').value;
             const customerName = document.getElementById('editCustomerName').value;
+            const orderId = document.getElementById('editOrderId').value.toUpperCase();
+            const delivererName = document.getElementById('editDelivererName').value;
+            const deliveryDate = document.getElementById('editDeliveryDate').value;
             const deliveryAddress = document.getElementById('editDeliveryAddress').value;
+            const delivererSignature = document.getElementById('editDelivererName_sig_data').value;
             
             if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
                 alert('Vui lòng điền đầy đủ thông tin!');
@@ -1274,12 +1422,19 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             
             const updatedData = {
                 orderId, deliveryDate, delivererName, customerName, deliveryAddress,
+                delivererSignature: delivererSignature || null, 
                 timestamp: new Date().toISOString()
             };
             
             database.ref('deliveries/' + key).update(updatedData)
                 .then(() => {
                     alert('Đã cập nhật thông tin giao hàng thành công!');
+                    
+                    updatePackingStatus(orderId, customerName);
+
+                    const compositeKey = orderId + "||" + customerName;
+                    completedDeliveriesSet.add(compositeKey);
+
                     closeModal();
                     loadDeliveryData();
                 })
@@ -1310,6 +1465,12 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     alert('Đã cập nhật thông tin đóng hàng thành công!');
                     closePackingModal();
                     loadPackingData();
+                    loadPendingPackingData(); 
+
+                    if (isDelivered) {
+                        const compositeKey = orderId + "||" + customerName;
+                        completedDeliveriesSet.add(compositeKey);
+                    }
                 })
                 .catch(error => alert('Có lỗi xảy ra khi cập nhật dữ liệu: ' + error.message));
         }
@@ -1318,10 +1479,23 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         function confirmDeleteDelivery(key) {
             if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) deleteDelivery(key);
         }
+
         function deleteDelivery(key) {
-            database.ref('deliveries/' + key).remove()
-                .then(() => { alert('Đã xóa đơn hàng thành công!'); closeModal(); loadDeliveryData(); })
-                .catch(error => alert('Có lỗi xảy ra khi xóa dữ liệu: ' + error.message));
+            database.ref('deliveries/' + key).once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    const delivery = snapshot.val();
+                    const compositeKey = delivery.orderId + "||" + delivery.customerName;
+                    completedDeliveriesSet.delete(compositeKey);
+                }
+            }).then(() => {
+                database.ref('deliveries/' + key).remove()
+                    .then(() => { 
+                        alert('Đã xóa đơn hàng thành công!'); 
+                        closeModal(); 
+                        loadDeliveryData(); 
+                    })
+                    .catch(error => alert('Có lỗi xảy ra khi xóa dữ liệu: ' + error.message));
+            });
         }
 
         function confirmDeletePacking(key) {
@@ -1329,12 +1503,22 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         }
         function deletePacking(key) {
             database.ref('packings/' + key).remove()
-                .then(() => { alert('Đã xóa đơn hàng thành công!'); closePackingModal(); loadPackingData(); })
+                .then(() => { 
+                    alert('Đã xóa đơn hàng thành công!'); 
+                    closePackingModal(); 
+                    loadPackingData(); 
+                    loadPendingPackingData(); 
+                })
                 .catch(error => alert('Có lỗi xảy ra khi xóa dữ liệu: ' + error.message));
         }
         
         // Modal controls
-        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+        function closeModal() { 
+            document.getElementById('editModal').style.display = 'none'; 
+            document.getElementById('editDelivererName_sig_data').value = '';
+            document.getElementById('editDelivererName_sig_preview').src = '';
+            document.getElementById('editDelivererName_sig_preview').style.display = 'none';
+        }
         function closePackingModal() { document.getElementById('editPackingModal').style.display = 'none'; }
         function showTransferConfirmModal(callback) {
             const modal = document.getElementById('transferConfirmModal');
@@ -1345,11 +1529,74 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         function showHelpModal() { document.getElementById('helpModal').style.display = 'block'; }
         function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
         
-        // NEW: Modal controls for adding deliverer
         function showAddDelivererModal() { document.getElementById('addDelivererModal').style.display = 'block'; }
         function closeAddDelivererModal() { document.getElementById('addDelivererModal').style.display = 'none'; }
+        
+        // Các hàm cho Modal Chữ ký
+        function showSignatureModal(targetInputId) {
+            currentSignatureTarget = targetInputId;
+            const modal = document.getElementById('signatureModal');
+            modal.style.display = 'block';
 
-        // NEW: Save new deliverer
+            const canvas = document.getElementById('signaturePad');
+            
+            function resizeCanvas() {
+                const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+            }
+            
+            setTimeout(() => {
+                if (!signaturePad) {
+                    signaturePad = new SignaturePad(canvas, {
+                        backgroundColor: 'rgb(255, 255, 255)' 
+                    });
+                }
+                resizeCanvas();
+                signaturePad.clear();
+                
+                const dataInput = document.getElementById(currentSignatureTarget + '_sig_data');
+                if (dataInput && dataInput.value) {
+                    signaturePad.fromDataURL(dataInput.value);
+                }
+                
+                document.getElementById('saveSignatureBtn').onclick = saveSignature;
+            }, 100); 
+
+            window.addEventListener("resize", resizeCanvas);
+        }
+
+        function closeSignatureModal() {
+            document.getElementById('signatureModal').style.display = 'none';
+            if(signaturePad) signaturePad.clear();
+            window.removeEventListener("resize", () => signaturePad.resizeCanvas());
+        }
+
+        function clearSignature() {
+            if(signaturePad) signaturePad.clear();
+        }
+
+        function saveSignature() {
+            if (signaturePad.isEmpty()) {
+                alert('Vui lòng ký tên trước khi lưu.');
+                return;
+            }
+
+            const dataURL = signaturePad.toDataURL('image/png'); 
+            const dataInput = document.getElementById(currentSignatureTarget + '_sig_data');
+            if (dataInput) dataInput.value = dataURL;
+            
+            const previewImg = document.getElementById(currentSignatureTarget + '_sig_preview');
+            if (previewImg) {
+                previewImg.src = dataURL;
+                previewImg.style.display = 'block';
+            }
+            
+            closeSignatureModal();
+        }
+
+        // Save new deliverer
         function saveDeliverer() {
             const newNameInput = document.getElementById('newDelivererName');
             const newName = newNameInput.value.trim();
@@ -1380,7 +1627,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         function viewOnMap(addressFieldId) {
             const address = document.getElementById(addressFieldId).value;
             if (!address) { alert('Vui lòng nhập địa chỉ trước!'); return; }
-            window.open(`https://maps.google.com/?q=${encodeURIComponent(address)}`, '_blank');
+            window.open(`https://www.google.com/maps?q=${encodeURIComponent(address)}`, '_blank');
         }
         
         // Báo cáo Giao hàng
@@ -1414,68 +1661,217 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                         const deliveryDate = new Date(delivery.deliveryDate);
                         if (deliveryDate >= startDate && deliveryDate <= endDate) {
                             count++;
+                            const signatureImg = delivery.delivererSignature 
+                                ? `<img src="${delivery.delivererSignature}" alt="Chữ ký" style="max-height: 40px; border: 1px solid #eee; background: white;">` 
+                                : 'Không có';
+                            
                             const row = reportTableBody.insertRow();
-                            row.innerHTML = `<td>${count}</td><td>${delivery.orderId}</td><td>${delivery.deliveryDate}</td><td>${delivery.delivererName}</td><td>${delivery.customerName}</td><td>${delivery.deliveryAddress}</td><td><button class="btn btn-sm btn-danger" onclick="confirmDeleteDelivery('${childSnapshot.key}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
+                            row.innerHTML = `
+                                <td>${count}</td>
+                                <td>${delivery.orderId}</td>
+                                <td>${delivery.deliveryDate}</td>
+                                <td>${delivery.delivererName}</td>
+                                <td>${signatureImg}</td>
+                                <td>${delivery.customerName}</td>
+                                <td>${delivery.deliveryAddress}</td>
+                                <td><button class="btn btn-sm btn-danger" onclick="confirmDeleteDelivery('${childSnapshot.key}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
                         }
                     });
-                    if (count === 0) reportTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
+                    if (count === 0) reportTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Không có dữ liệu</td></tr>';
                     document.getElementById('reportSpinner').style.display = 'none';
                 })
                 .catch(error => { console.error('Lỗi khi tạo báo cáo:', error); document.getElementById('reportSpinner').style.display = 'none'; });
         }
         
-        // Báo cáo Đóng hàng
-        function generatePackingReport() {
-            const reportType = document.getElementById('packingReportType').value;
-            const fromDate = document.getElementById('packingFromDate').value;
-            const toDate = document.getElementById('packingToDate').value;
-            let startDate, endDate;
+       // Báo cáo Đóng hàng (ĐÃ SỬA LỖI TRIỆT ĐỂ)
+async function generatePackingReport() {
+    const reportType = document.getElementById('packingReportType').value;
+    const fromDate = document.getElementById('packingFromDate').value;
+    const toDate = document.getElementById('packingToDate').value;
+    let startDate, endDate;
 
-            if (fromDate && toDate) {
-                 startDate = new Date(fromDate);
-                 endDate = new Date(toDate);
-            } else {
-                 const now = new Date();
-                switch (reportType) {
-                    case 'daily': startDate = new Date(document.getElementById('packingReportDate').value); endDate = new Date(startDate); break;
-                    case 'weekly': const weekVal = document.getElementById('packingReportWeek').value; startDate = new Date(weekVal); endDate = new Date(startDate); endDate.setDate(startDate.getDate() + 6); break;
-                    case 'monthly': const monthVal = document.getElementById('packingReportMonth').value; startDate = new Date(monthVal); endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0); break;
-                }
-            }
-             endDate.setHours(23, 59, 59, 999);
-
-            document.getElementById('packingReportSpinner').style.display = 'block';
-            database.ref('packings').orderByChild('timestamp').once('value')
-                .then(snapshot => {
-                    const reportTableBody = document.getElementById('packingReportTableBody');
-                    reportTableBody.innerHTML = '';
-                    let count = 0;
-                    snapshot.forEach(childSnapshot => {
-                        const packing = childSnapshot.val();
-                        const packingDate = new Date(packing.packingDate);
-                        if (packingDate >= startDate && packingDate <= endDate) {
-                            count++;
-                            const row = reportTableBody.insertRow();
-                            const statusClass = packing.isDelivered ? 'packed' : 'not-packed';
-                            const statusText = packing.isDelivered ? 'Đã giao' : 'Chờ giao';
-                            row.innerHTML = `<td>${count}</td><td>${packing.orderId}</td><td>${packing.packingDate}</td><td>${packing.customerName}</td><td>${packing.address}</td><td><span class="packing-status ${statusClass}">${statusText}</span></td><td><button class="btn btn-sm btn-danger" onclick="confirmDeletePacking('${childSnapshot.key}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
-                        }
-                    });
-                     if (count === 0) reportTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
-                    document.getElementById('packingReportSpinner').style.display = 'none';
-                })
-                .catch(error => { console.error('Lỗi khi tạo báo cáo:', error); document.getElementById('packingReportSpinner').style.display = 'none'; });
+    if (fromDate && toDate) {
+        startDate = new Date(fromDate);
+        endDate = new Date(toDate);
+    } else {
+        const now = new Date();
+        switch (reportType) {
+            case 'daily': 
+                startDate = new Date(document.getElementById('packingReportDate').value); 
+                endDate = new Date(startDate); 
+                break;
+            case 'weekly': 
+                const weekVal = document.getElementById('packingReportWeek').value; 
+                startDate = new Date(weekVal); 
+                endDate = new Date(startDate); 
+                endDate.setDate(startDate.getDate() + 6); 
+                break;
+            case 'monthly': 
+                const monthVal = document.getElementById('packingReportMonth').value; 
+                startDate = new Date(monthVal); 
+                endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0); 
+                break;
         }
+    }
+    endDate.setHours(23, 59, 59, 999);
+
+    document.getElementById('packingReportSpinner').style.display = 'block';
+    
+    try {
+        // QUAN TRỌNG: Tải và xử lý toàn bộ dữ liệu giao hàng trước
+        console.log("Đang tải dữ liệu giao hàng để đối soát...");
+        const deliveriesSnapshot = await database.ref('deliveries').once('value');
+        const completedDeliveries = new Set();
+        
+        deliveriesSnapshot.forEach(childSnapshot => {
+            const delivery = childSnapshot.val();
+            // Tạo key đối soát: Mã đơn + Tên KH (chuẩn hóa)
+            const compositeKey = (delivery.orderId + "||" + delivery.customerName).toLowerCase().trim();
+            completedDeliveries.add(compositeKey);
+            console.log(`Đã giao: ${delivery.orderId} - ${delivery.customerName}`);
+        });
+        
+        console.log(`Tổng số đơn đã giao: ${completedDeliveries.size}`);
+
+        // Tải dữ liệu đóng hàng
+        console.log("Đang tải dữ liệu đóng hàng...");
+        const packingsSnapshot = await database.ref('packings').orderByChild('timestamp').once('value');
+        const reportTableBody = document.getElementById('packingReportTableBody');
+        reportTableBody.innerHTML = '';
+        let count = 0;
+        let fixedCount = 0;
+        
+        packingsSnapshot.forEach(childSnapshot => {
+            const packing = childSnapshot.val();
+            const packingKey = childSnapshot.key;
+            const packingDate = new Date(packing.packingDate);
+            
+            if (packingDate >= startDate && packingDate <= endDate) {
+                count++;
+                
+                // ĐỐI SOÁT CHÉO: Kiểm tra xem đơn này đã được giao chưa
+                const compositeKey = (packing.orderId + "||" + packing.customerName).toLowerCase().trim();
+                const isActuallyDelivered = completedDeliveries.has(compositeKey);
+
+                console.log(`Kiểm tra: ${packing.orderId} - ${packing.customerName} -> ${isActuallyDelivered ? 'ĐÃ GIAO' : 'CHỜ GIAO'}`);
+
+                let statusClass, statusText;
+
+                if (isActuallyDelivered) {
+                    statusClass = 'packed';
+                    statusText = 'Đã kết thúc';
+                    
+                    // TỰ ĐỘNG SỬA TRẠNG THÁI NẾU CHƯA ĐÚNG
+                    if (!packing.isDelivered) {
+                        console.log(`🚨 Tự động sửa trạng thái cho đơn: ${packing.orderId}`);
+                        database.ref('packings/' + packingKey).update({ isDelivered: true });
+                        fixedCount++;
+                    }
+                } else {
+                    statusClass = 'not-packed';
+                    statusText = 'Chờ giao';
+                    
+                    // ĐẢM BẢO TRẠNG THÁI ĐÚNG NẾU CHƯA GIAO
+                    if (packing.isDelivered) {
+                        console.log(`🚨 Tự động sửa trạng thái chờ giao cho đơn: ${packing.orderId}`);
+                        database.ref('packings/' + packingKey).update({ isDelivered: false });
+                        fixedCount++;
+                    }
+                }
+                
+                const row = reportTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${count}</td>
+                    <td>${packing.orderId}</td>
+                    <td>${packing.packingDate}</td>
+                    <td>${packing.customerName}</td>
+                    <td>${packing.address}</td>
+                    <td><span class="packing-status ${statusClass}">${statusText}</span></td>
+                    <td><button class="btn btn-sm btn-danger" onclick="confirmDeletePacking('${packingKey}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
+            }
+        });
+        
+        if (count === 0) {
+            reportTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
+        }
+        
+        console.log(`Đã xử lý ${count} đơn đóng hàng, sửa ${fixedCount} trạng thái`);
+        if (fixedCount > 0) {
+            alert(`Đã tự động sửa ${fixedCount} trạng thái không khớp!`);
+        }
+    
+    } catch (error) {
+        console.error('Lỗi khi tạo báo cáo:', error);
+        alert('Có lỗi xảy ra khi tạo báo cáo: ' + error.message);
+    } finally {
+        document.getElementById('packingReportSpinner').style.display = 'none';
+    }
+}
+      // Hàm đồng bộ lại toàn bộ dữ liệu (dùng khi cần fix lỗi)
+async function syncAllPackingStatus() {
+    if (!confirm('Bạn có chắc muốn đồng bộ lại toàn bộ trạng thái đóng hàng với dữ liệu giao hàng?')) {
+        return;
+    }
+    
+    try {
+        // Tải toàn bộ dữ liệu giao hàng
+        const deliveriesSnapshot = await database.ref('deliveries').once('value');
+        const completedDeliveries = new Set();
+        
+        deliveriesSnapshot.forEach(childSnapshot => {
+            const delivery = childSnapshot.val();
+            const compositeKey = (delivery.orderId + "||" + delivery.customerName).toLowerCase().trim();
+            completedDeliveries.add(compositeKey);
+        });
+
+        // Tải toàn bộ dữ liệu đóng hàng
+        const packingsSnapshot = await database.ref('packings').once('value');
+        let updatedCount = 0;
+        
+        packingsSnapshot.forEach(childSnapshot => {
+            const packing = childSnapshot.val();
+            const packingKey = childSnapshot.key;
+            
+            // Kiểm tra trạng thái thực tế
+            const compositeKey = (packing.orderId + "||" + packing.customerName).toLowerCase().trim();
+            const isActuallyDelivered = completedDeliveries.has(compositeKey);
+            
+            // Cập nhật nếu không khớp
+            if (packing.isDelivered !== isActuallyDelivered) {
+                database.ref('packings/' + packingKey).update({ isDelivered: isActuallyDelivered });
+                updatedCount++;
+                console.log(`Đã sửa: ${packing.orderId} -> ${isActuallyDelivered ? 'Đã giao' : 'Chờ giao'}`);
+            }
+        });
+        
+        alert(`Đã đồng bộ ${updatedCount} đơn hàng!`);
+        loadPackingData(); // Reload để hiển thị đúng
+        
+    } catch (error) {
+        console.error('Lỗi khi đồng bộ:', error);
+        alert('Có lỗi khi đồng bộ: ' + error.message);
+    }
+}
         
         // Xóa báo cáo
         function clearDeliveryReport() {
             if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu giao hàng?')) {
-                database.ref('deliveries').remove().then(() => { alert('Đã xóa tất cả dữ liệu giao hàng!'); loadDeliveryData(); document.getElementById('reportTableBody').innerHTML = ''; });
+                database.ref('deliveries').remove().then(() => { 
+                    alert('Đã xóa tất cả dữ liệu giao hàng!'); 
+                    loadDeliveryData(); 
+                    document.getElementById('reportTableBody').innerHTML = '';
+                    completedDeliveriesSet.clear(); 
+                });
             }
         }
         function clearPackingReport() {
             if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu đóng hàng?')) {
-                database.ref('packings').remove().then(() => { alert('Đã xóa tất cả dữ liệu đóng hàng!'); loadPackingData(); document.getElementById('packingReportTableBody').innerHTML = ''; });
+                database.ref('packings').remove().then(() => { 
+                    alert('Đã xóa tất cả dữ liệu đóng hàng!'); 
+                    loadPackingData(); 
+                    document.getElementById('packingReportTableBody').innerHTML = ''; 
+                    loadPendingPackingData(); 
+                });
             }
         }
         
@@ -1485,6 +1881,11 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             if (table.rows.length <= 1) { alert('Không có dữ liệu để xuất!'); return; }
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.sheet_add_aoa(ws, [[""]], {origin: "E1"}); 
+            for (let i = 1; i < table.rows.length; i++) {
+                 XLSX.utils.sheet_add_aoa(ws, [["(Chữ ký - xem trên web)"]], {origin: `E${i+1}`});
+            }
+            
             XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo giao hàng');
             XLSX.writeFile(wb, 'bao_cao_giao_hang.xlsx');
         }
@@ -1518,7 +1919,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 });
         }
         
-        // Chuyển đổi hiển thị input báo cáo
         function toggleReportInputs(reportType, prefix) {
             document.getElementById(`${prefix}Date`).style.display = reportType === 'daily' ? 'block' : 'none';
             document.getElementById(`${prefix}Week`).style.display = reportType === 'weekly' ? 'block' : 'none';
@@ -1587,9 +1987,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         // Autocomplete
         function initCustomerAutocomplete() {
             const inputs = [
-                document.getElementById('customerName'),
                 document.getElementById('packingCustomerName'),
-                document.getElementById('editCustomerName'),
                 document.getElementById('editPackingCustomerName')
             ];
             inputs.forEach(input => {
@@ -1613,12 +2011,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                                     input.value = this.getElementsByTagName('input')[0].value;
                                     const customerInfo = customerData.find(c => c.name === input.value);
                                     if(customerInfo) {
-                                        let addressField;
-                                        if (input.id.includes('packing')) {
-                                            addressField = document.getElementById(input.id.replace('CustomerName', 'Address'));
-                                        } else {
-                                             addressField = document.getElementById(input.id.replace('customerName', 'deliveryAddress'));
-                                        }
+                                        let addressField = document.getElementById(input.id.replace('CustomerName', 'Address'));
                                         if(addressField) addressField.value = customerInfo.address;
                                     }
                                     closeAllLists();
@@ -1630,7 +2023,55 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             });
         }
 
-        // NEW: Autocomplete for deliverers
+        function initPendingPackingAutocomplete() {
+            const inputs = [
+                document.getElementById('customerName'),
+                document.getElementById('editCustomerName')
+            ];
+            inputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('click', function() { this.dispatchEvent(new Event('input')); });
+
+                    input.addEventListener('input', function() {
+                        const val = this.value;
+                        closeAllLists();
+                        
+                        const list = document.createElement('div');
+                        list.setAttribute('id', this.id + '-autocomplete-list');
+                        list.setAttribute('class', 'autocomplete-items');
+                        this.parentNode.appendChild(list);
+                        
+                        const filteredData = pendingPackingData
+                            .filter(p => p.customerName.toLowerCase().includes(val.toLowerCase()));
+
+                        if(filteredData.length === 0 && val) {
+                            const item = document.createElement('div');
+                            item.innerHTML = 'Không tìm thấy đơn hàng "Chờ giao"';
+                            list.appendChild(item);
+                        }
+                        
+                        filteredData.forEach(packing => {
+                                const item = document.createElement('div');
+                                item.innerHTML = `<strong>${packing.customerName}</strong> (Đơn: ${packing.orderId})<br><small>${packing.address}</small>`;
+                                
+                                item.addEventListener('click', function() {
+                                    const isEdit = input.id.includes('edit');
+                                    const orderIdEl = isEdit ? 'editOrderId' : 'orderId';
+                                    const addressEl = isEdit ? 'editDeliveryAddress' : 'deliveryAddress';
+
+                                    input.value = packing.customerName;
+                                    document.getElementById(orderIdEl).value = packing.orderId;
+                                    document.getElementById(addressEl).value = packing.address;
+                                    
+                                    closeAllLists();
+                                });
+                                list.appendChild(item);
+                            });
+                    });
+                }
+            });
+        }
+
         function initDelivererAutocomplete() {
             const inputs = [
                 document.getElementById('delivererName'),
@@ -1657,6 +2098,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                                 item.addEventListener('click', function() {
                                     input.value = this.getElementsByTagName('input')[0].value;
                                     closeAllLists();
+
                                 });
                                 list.appendChild(item);
                             });
