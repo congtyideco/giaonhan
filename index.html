@@ -78,12 +78,17 @@
             color: var(--dark-color);
         }
         
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
         }
         
         .btn {
@@ -609,6 +614,12 @@
                     </div>
                 </div>
 
+                <!-- Bổ sung trường ghi chú giao hàng -->
+                <div class="form-group">
+                    <label for="deliveryNotes">Ghi chú giao hàng:</label>
+                    <textarea id="deliveryNotes" placeholder="Nhập ghi chú về quá trình giao hàng (nếu có)"></textarea>
+                </div>
+
                 <button class="btn btn-primary" onclick="saveDelivery()">
                     <i class="fas fa-save"></i> Giao xong - hay phải giao mới bấm lưu dữ liệu
                 </button>
@@ -710,6 +721,7 @@
                             <th>Chữ ký</th>
                             <th>Khách hàng</th>
                             <th>Địa chỉ</th>
+                            <th>Ghi chú</th>
                             <th>Xóa</th>
                         </tr>
                     </thead>
@@ -901,6 +913,12 @@
                 </div>
             </div>
 
+            <!-- Bổ sung trường ghi chú giao hàng trong modal chỉnh sửa -->
+            <div class="form-group">
+                <label for="editDeliveryNotes">Ghi chú giao hàng:</label>
+                <textarea id="editDeliveryNotes" placeholder="Nhập ghi chú về quá trình giao hàng (nếu có)"></textarea>
+            </div>
+
             <button class="btn btn-primary" onclick="updateDelivery()">
                 <i class="fas fa-save"></i> Cập nhật
             </button>
@@ -1025,6 +1043,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     <li>Mã đơn hàng và Địa chỉ sẽ được tự động điền.</li>
                     <li>Nhập/chọn "Tên người giao" và "Ngày giao".</li>
                     <li>Nhấn nút "Ký tên" (<i class="fas fa-signature"></i>) để ký tên bằng tay.</li>
+                    <li>Nhập "Ghi chú giao hàng" nếu có thông tin cần lưu ý về quá trình giao hàng.</li>
                     <li>Chỉ nhấn "Giao xong" khi đơn hàng đã được giao thành công.</li>
                     <li>Khi "Giao xong", đơn hàng bên tab "Đóng hàng" sẽ tự động cập nhật là "Đã kết thúc".</li>
                 </ul>
@@ -1032,7 +1051,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 <h3>3. Báo cáo</h3>
                 <ul>
                     <li>Chọn loại báo cáo (ngày/tuần/tháng) hoặc khoảng thời gian cụ thể</li>
-                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu (bao gồm cả chữ ký)</li>
+                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu (bao gồm cả chữ ký và ghi chú)</li>
                     <li>Báo cáo đóng hàng sẽ tự động đối soát với báo cáo giao hàng để hiển thị trạng thái chính xác nhất.</li>
                     <li>Xuất Excel để tải báo cáo về máy tính (Lưu ý: Excel không xuất được ảnh chữ ký)</li>
                     <li>Xóa báo cáo để xóa dữ liệu đã chọn</li>
@@ -1042,7 +1061,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 <h3>4. Quản lý</h3>
                 <ul>
                     <li>Tìm kiếm đơn hàng theo mã đơn hoặc tên khách hàng</li>
-                    <li>Chỉnh sửa hoặc xóa đơn hàng nếu có sai sót (có thể sửa cả chữ ký)</li>
+                    <li>Chỉnh sửa hoặc xóa đơn hàng nếu có sai sót (có thể sửa cả chữ ký và ghi chú)</li>
                 </ul>
             </div>
         </div>
@@ -1195,6 +1214,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             const delivererName = document.getElementById('delivererName').value;
             const customerName = document.getElementById('customerName').value;
             const deliveryAddress = document.getElementById('deliveryAddress').value;
+            const deliveryNotes = document.getElementById('deliveryNotes').value;
             const delivererSignature = document.getElementById('delivererName_sig_data').value;
             
             if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
@@ -1205,6 +1225,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             showTransferConfirmModal(() => {
                 const deliveryData = {
                     orderId, deliveryDate, delivererName, customerName, deliveryAddress,
+                    deliveryNotes: deliveryNotes || '',
                     delivererSignature: delivererSignature || null, 
                     timestamp: new Date().toISOString()
                 };
@@ -1223,6 +1244,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                         document.getElementById('customerName').value = '';
                         document.getElementById('deliveryAddress').value = '';
                         document.getElementById('delivererName').value = '';
+                        document.getElementById('deliveryNotes').value = '';
                         document.getElementById('delivererName_sig_data').value = '';
                         document.getElementById('delivererName_sig_preview').src = '';
                         document.getElementById('delivererName_sig_preview').style.display = 'none';
@@ -1370,6 +1392,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     document.getElementById('editDelivererName').value = delivery.delivererName;
                     document.getElementById('editDeliveryDate').value = delivery.deliveryDate;
                     document.getElementById('editDeliveryAddress').value = delivery.deliveryAddress;
+                    document.getElementById('editDeliveryNotes').value = delivery.deliveryNotes || '';
                     
                     const dataInput = document.getElementById('editDelivererName_sig_data');
                     const previewImg = document.getElementById('editDelivererName_sig_preview');
@@ -1413,6 +1436,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             const delivererName = document.getElementById('editDelivererName').value;
             const deliveryDate = document.getElementById('editDeliveryDate').value;
             const deliveryAddress = document.getElementById('editDeliveryAddress').value;
+            const deliveryNotes = document.getElementById('editDeliveryNotes').value;
             const delivererSignature = document.getElementById('editDelivererName_sig_data').value;
             
             if (!orderId || !deliveryDate || !delivererName || !customerName || !deliveryAddress) {
@@ -1422,6 +1446,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             
             const updatedData = {
                 orderId, deliveryDate, delivererName, customerName, deliveryAddress,
+                deliveryNotes: deliveryNotes || '',
                 delivererSignature: delivererSignature || null, 
                 timestamp: new Date().toISOString()
             };
@@ -1674,10 +1699,11 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                                 <td>${signatureImg}</td>
                                 <td>${delivery.customerName}</td>
                                 <td>${delivery.deliveryAddress}</td>
+                                <td>${delivery.deliveryNotes || ''}</td>
                                 <td><button class="btn btn-sm btn-danger" onclick="confirmDeleteDelivery('${childSnapshot.key}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
                         }
                     });
-                    if (count === 0) reportTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Không có dữ liệu</td></tr>';
+                    if (count === 0) reportTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Không có dữ liệu</td></tr>';
                     document.getElementById('reportSpinner').style.display = 'none';
                 })
                 .catch(error => { console.error('Lỗi khi tạo báo cáo:', error); document.getElementById('reportSpinner').style.display = 'none'; });
