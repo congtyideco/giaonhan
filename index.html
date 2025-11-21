@@ -525,6 +525,12 @@
                     <label for="packingDate">Ngày đóng hàng:</label>
                     <input type="date" id="packingDate" required>
                 </div>
+                
+                <div class="form-group">
+                    <label for="packingNotes">Ghi chú đóng hàng:</label>
+                    <textarea id="packingNotes" placeholder="Nhập ghi chú về quy cách đóng gói, số lượng thùng... (nếu có)"></textarea>
+                </div>
+
                 <button class="btn btn-primary" onclick="savePacking()">
                     <i class="fas fa-box"></i> Xác nhận đơn đã đóng hàng xong
                 </button>
@@ -614,7 +620,6 @@
                     </div>
                 </div>
 
-                <!-- Bổ sung trường ghi chú giao hàng -->
                 <div class="form-group">
                     <label for="deliveryNotes">Ghi chú giao hàng:</label>
                     <textarea id="deliveryNotes" placeholder="Nhập ghi chú về quá trình giao hàng (nếu có)"></textarea>
@@ -793,7 +798,7 @@
                             <th>Khách hàng</th>
                             <th>Địa chỉ</th>
                             <th>Trạng thái giao</th>
-                            <th>Xóa</th>
+                            <th>Ghi chú</th> <th>Xóa</th>
                         </tr>
                     </thead>
                     <tbody id="packingReportTableBody">
@@ -913,7 +918,6 @@
                 </div>
             </div>
 
-            <!-- Bổ sung trường ghi chú giao hàng trong modal chỉnh sửa -->
             <div class="form-group">
                 <label for="editDeliveryNotes">Ghi chú giao hàng:</label>
                 <textarea id="editDeliveryNotes" placeholder="Nhập ghi chú về quá trình giao hàng (nếu có)"></textarea>
@@ -954,6 +958,12 @@
                 <label for="editPackingDate">Ngày đóng hàng:</label>
                 <input type="date" id="editPackingDate" required>
             </div>
+            
+            <div class="form-group">
+                <label for="editPackingNotes">Ghi chú đóng hàng:</label>
+                <textarea id="editPackingNotes" placeholder="Nhập ghi chú về quy cách đóng gói..."></textarea>
+            </div>
+
             <div class="form-group">
                 <label for="editPackingStatus">Trạng thái giao hàng:</label>
                 <select id="editPackingStatus" class="form-control">
@@ -1261,6 +1271,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             const customerName = document.getElementById('packingCustomerName').value;
             const address = document.getElementById('packingAddress').value;
             const packingDate = document.getElementById('packingDate').value;
+            const notes = document.getElementById('packingNotes').value; // BỔ SUNG: Lấy dữ liệu ghi chú
             
             if (!orderId || !customerName || !address || !packingDate) {
                 alert('Vui lòng điền đầy đủ thông tin!');
@@ -1269,6 +1280,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             
             const packingData = {
                 orderId, customerName, address, packingDate,
+                notes: notes || '', // BỔ SUNG: Lưu ghi chú vào object
                 isDelivered: false,
                 timestamp: new Date().toISOString()
             };
@@ -1279,6 +1291,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     document.getElementById('packingOrderId').value = '';
                     document.getElementById('packingCustomerName').value = '';
                     document.getElementById('packingAddress').value = '';
+                    document.getElementById('packingNotes').value = ''; // Reset ô ghi chú
                     loadPackingData();
                     loadPendingPackingData(); 
                 })
@@ -1423,6 +1436,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     document.getElementById('editPackingAddress').value = packing.address;
                     document.getElementById('editPackingDate').value = packing.packingDate;
                     document.getElementById('editPackingStatus').value = packing.isDelivered;
+                    document.getElementById('editPackingNotes').value = packing.notes || ''; // BỔ SUNG: Load ghi chú vào modal
                     document.getElementById('editPackingModal').style.display = 'block';
                 })
                 .catch(error => console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error));
@@ -1474,6 +1488,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             const address = document.getElementById('editPackingAddress').value;
             const packingDate = document.getElementById('editPackingDate').value;
             const isDelivered = document.getElementById('editPackingStatus').value === 'true';
+            const notes = document.getElementById('editPackingNotes').value; // BỔ SUNG: Lấy ghi chú từ modal
             
             if (!orderId || !customerName || !address || !packingDate) {
                 alert('Vui lòng điền đầy đủ thông tin!');
@@ -1482,6 +1497,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             
             const updatedData = {
                 orderId, customerName, address, packingDate, isDelivered,
+                notes: notes || '', // BỔ SUNG: Update ghi chú
                 timestamp: new Date().toISOString()
             };
             
@@ -1806,6 +1822,7 @@ async function generatePackingReport() {
                 }
                 
                 const row = reportTableBody.insertRow();
+                // BỔ SUNG: Thêm cột Ghi chú vào bảng báo cáo
                 row.innerHTML = `
                     <td>${count}</td>
                     <td>${packing.orderId}</td>
@@ -1813,12 +1830,13 @@ async function generatePackingReport() {
                     <td>${packing.customerName}</td>
                     <td>${packing.address}</td>
                     <td><span class="packing-status ${statusClass}">${statusText}</span></td>
+                    <td>${packing.notes || ''}</td> 
                     <td><button class="btn btn-sm btn-danger" onclick="confirmDeletePacking('${packingKey}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
             }
         });
         
         if (count === 0) {
-            reportTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Không có dữ liệu</td></tr>';
+            reportTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Không có dữ liệu</td></tr>';
         }
         
         console.log(`Đã xử lý ${count} đơn đóng hàng, sửa ${fixedCount} trạng thái`);
