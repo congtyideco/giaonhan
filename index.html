@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Đóng hàng & Giao hàng - KPI</title>
+    <title>Quản lý Đóng hàng & Giao hàng - KPI với Đánh giá</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -196,12 +196,14 @@
             display: flex;
             margin-bottom: 20px;
             border-bottom: 1px solid #ddd;
+            overflow-x: auto;
         }
         
         .tab {
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            white-space: nowrap;
         }
         
         .tab.active {
@@ -230,7 +232,6 @@
             border-top: 1px solid #ddd;
         }
         
-        /* Trạng thái đóng gói */
         .packing-status {
             display: inline-block;
             padding: 3px 8px;
@@ -249,7 +250,6 @@
             color: white;
         }
         
-        /* Input groups */
         .address-group, .input-group {
             display: flex;
             align-items: center;
@@ -284,7 +284,6 @@
              background-color: #27ae60;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -317,9 +316,12 @@
             .map-btn, .add-btn {
                 width: 100%;
             }
+            
+            .tabs {
+                overflow-x: auto;
+            }
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -355,7 +357,6 @@
             margin-top: 20px;
         }
         
-        /* Loading spinner */
         .spinner {
             display: none;
             border: 4px solid rgba(0, 0, 0, 0.1);
@@ -372,7 +373,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Help button */
         .help-btn {
             position: fixed;
             bottom: 20px;
@@ -391,7 +391,6 @@
             z-index: 999;
         }
         
-        /* Help content */
         .help-content {
             line-height: 1.8;
         }
@@ -405,7 +404,6 @@
             padding-left: 20px;
         }
         
-        /* Autocomplete */
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
@@ -435,7 +433,6 @@
             color: #ffffff;
         }
         
-        /* File upload */
         .file-upload-container {
             margin-bottom: 20px;
             padding: 15px;
@@ -472,23 +469,105 @@
             margin-top: 20px;
         }
 
-        /* CSS cho canvas chữ ký */
         #signaturePad {
             width: 100%;
             height: 200px;
             cursor: crosshair;
         }
         
-        /* Đảm bảo canvas có nền trắng */
         .modal-content canvas {
             background-color: #fff;
+        }
+        
+        /* CSS cho tab ĐÁNH GIÁ */
+        .evaluation-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        
+        .evaluation-good {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .evaluation-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .evaluation-error {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .kpi-score {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .kpi-good {
+            color: var(--success-color);
+        }
+        
+        .kpi-warning {
+            color: var(--warning-color);
+        }
+        
+        .kpi-bad {
+            color: var(--danger-color);
+        }
+        
+        .error-details {
+            max-width: 300px;
+            font-size: 12px;
+            background: #fff8f8;
+            padding: 5px;
+            border-radius: 4px;
+            border-left: 3px solid var(--danger-color);
+        }
+        
+        .help-text {
+            margin-top: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .employee-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .employee-row {
+            display: flex;
+            align-items: center;
+        }
+        
+        .auto-eval-btn {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .auto-eval-btn:hover {
+            background-color: #8e44ad;
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container header-content">
-            <h1>Quản lý Đóng hàng & Giao hàng - KPI kho vận (IDECO)</h1>
+            <h1>Quản lý Đóng hàng & Giao hàng - KPI với Đánh giá</h1>
         </div>
     </header>
     
@@ -497,6 +576,7 @@
             <div class="tab active" data-tab="packing">Đóng hàng</div>
             <div class="tab" data-tab="delivery">Giao hàng</div>
             <div class="tab" data-tab="reports">Báo cáo</div>
+            <div class="tab" data-tab="evaluation">ĐÁNH GIÁ</div>
             <div class="tab" data-tab="management">Quản lý</div>
             <div class="tab" data-tab="customer-data">Dữ liệu KH</div>
         </div>
@@ -807,6 +887,124 @@
             </div>
         </div>
         
+        <!-- TAB ĐÁNH GIÁ MỚI -->
+        <div class="tab-content" id="evaluation-tab">
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> ĐÁNH GIÁ HIỆU SUẤT GIAO HÀNG</h2>
+                
+                <div class="form-group">
+                    <label for="evaluationDate">Ngày đánh giá:</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="date" id="evaluationDate" value="" style="width: 200px;">
+                        <button class="btn btn-primary" onclick="runDailyEvaluation()">
+                            <i class="fas fa-play"></i> Chạy đánh giá ngày
+                        </button>
+                        <button class="btn btn-success" onclick="runEvaluationForCurrentMonth()">
+                            <i class="fas fa-calendar-alt"></i> Đánh giá tháng này
+                        </button>
+                        <button class="btn auto-eval-btn" onclick="setupAutoEvaluation()">
+                            <i class="fas fa-robot"></i> Cài đặt tự động
+                        </button>
+                    </div>
+                    <p class="help-text">
+                        <i class="fas fa-info-circle"></i> Hệ thống sẽ tự động kiểm tra các đơn chưa giao vào cuối ngày (trước 17:00)
+                    </p>
+                </div>
+                
+                <div class="stats-container" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <h3>Hôm nay</h3>
+                        <div class="stat-value" id="todayPendingCount">0</div>
+                        <p>đơn chờ giao</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Lỗi hôm nay</h3>
+                        <div class="stat-value" id="todayErrorsCount" style="color: var(--danger-color);">0</div>
+                        <p>lỗi giao chậm</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tổng lỗi tháng</h3>
+                        <div class="stat-value" id="monthErrorsCount" style="color: var(--danger-color);">0</div>
+                        <p>lỗi trong tháng</p>
+                    </div>
+                </div>
+                
+                <div class="section-divider"></div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-exclamation-triangle"></i> DANH SÁCH LỖI GIAO CHẬM</h3>
+                    <p style="color: var(--danger-color); margin-bottom: 15px;">
+                        <i class="fas fa-info-circle"></i> Đơn hàng được coi là "Lỗi giao chậm" khi: 
+                        <br>• Đã đóng hàng xong nhưng chưa được bấm "Giao xong" trước 17:00 cùng ngày
+                        <br>• Số lượng đơn chờ giao > 2 đơn vào cuối ngày
+                    </p>
+                    
+                    <div class="report-controls">
+                        <div style="min-width:180px;">
+                            <label>Xem lỗi theo</label>
+                            <select id="errorFilterType" class="form-control" onchange="filterEvaluationErrors()">
+                                <option value="today">Hôm nay</option>
+                                <option value="week">Tuần này</option>
+                                <option value="month">Tháng này</option>
+                                <option value="all">Tất cả</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn btn-warning" onclick="exportEvaluationToExcel()">
+                                <i class="fas fa-file-excel"></i> Xuất Excel
+                            </button>
+                        </div>
+                        <div>
+                            <button class="btn btn-danger" onclick="clearAllEvaluationData()">
+                                <i class="fas fa-trash"></i> Xóa tất cả
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="spinner" id="evaluationSpinner"></div>
+                    
+                    <table id="evaluationTable">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Ngày kiểm tra</th>
+                                <th>Số đơn chờ giao</th>
+                                <th>Trạng thái</th>
+                                <th>Đánh giá KPI</th>
+                                <th>Danh sách đơn lỗi</th>
+                                <th>Nhân viên phụ trách</th>
+                                <th>Ghi chú</th>
+                                <th>Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evaluationTableBody">
+                            <!-- Dữ liệu sẽ được thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h3><i class="fas fa-chart-pie"></i> THỐNG KÊ LỖI THEO NHÂN VIÊN</h3>
+                    <div class="spinner" id="employeeStatsSpinner"></div>
+                    <table id="employeeStatsTable">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên nhân viên</th>
+                                <th>Số lỗi tháng</th>
+                                <th>Đơn chậm giao</th>
+                                <th>Tỉ lệ lỗi</th>
+                                <th>Điểm KPI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeStatsTableBody">
+                            <!-- Dữ liệu sẽ được thêm vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
         <div class="tab-content" id="management-tab">
             <div class="card">
                 <h2>Quản lý đơn hàng</h2>
@@ -872,6 +1070,7 @@
         </div>
     </div>
     
+    <!-- Các modal hiện có -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">×</span>
@@ -1032,46 +1231,83 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             </div>
         </div>
     </div>
+    
+    <!-- Modal cài đặt đánh giá tự động -->
+    <div id="autoEvalModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAutoEvalModal()">×</span>
+            <h2><i class="fas fa-robot"></i> Cài đặt đánh giá tự động</h2>
+            
+            <div class="form-group">
+                <label for="autoEvalTime">Thời gian chạy đánh giá hàng ngày:</label>
+                <input type="time" id="autoEvalTime" value="17:00">
+                <p class="help-text">Thời gian hệ thống sẽ tự động kiểm tra các đơn chưa giao (mặc định 17:00)</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="errorThreshold">Ngưỡng lỗi giao chậm:</label>
+                <input type="number" id="errorThreshold" value="2" min="1" max="10">
+                <p class="help-text">Số đơn chờ giao tối đa trước khi bị tính là "Lỗi giao chậm"</p>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="enableAutoEval" checked> Kích hoạt đánh giá tự động
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="sendNotification" checked> Gửi thông báo khi phát hiện lỗi
+                </label>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn" onclick="closeAutoEvalModal()" style="background-color: #ccc;">Hủy</button>
+                <button class="btn btn-primary" onclick="saveAutoEvalSettings()">
+                    <i class="fas fa-save"></i> Lưu cài đặt
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeHelpModal()">×</span>
             <h2>Hướng dẫn sử dụng</h2>
             <div class="help-content">
-                <h3>1. Phần này do: Điều phối kho đảm nhận khai báo - ngoài ra Quản lý kho vận cũng được tham gia </h3>
+                <h3>1. Đóng hàng</h3>
                 <ul>
-                    <li>Sau khi mọi đơn hàng đã được đóng xong sẵn sàng giao ra kho thì phải khai báo ngay trước khi ra khỏi kho</li>
+                    <li>Sau khi mọi đơn hàng đã được đóng xong sẵn sàng giao ra kho thì phải khai báo ngay</li>
                     <li>Mã đơn hàng từ đơn hàng ERP in ra và nhập đúng chính xác</li>
-                    <li>Thông tin tên khách hàng- địa chỉ giao hàng phải điền đủ hay chỉnh lại đúng sau đó</li>
-                    <li>Khi đóng hàng đơn hàng này thì xử lý xong rồi bấm đã xong đóng gói</li>
-                    <li>Trạng thái báo: đang chờ màu đỏ tức là tình trạnh đơn chưa được giao đang tạm lưu kho</li>
+                    <li>Thông tin tên khách hàng- địa chỉ giao hàng phải điền đủ</li>
+                    <li>Khi đóng hàng xong thì bấm "Xác nhận đơn đã đóng hàng xong"</li>
+                    <li>Trạng thái "Chờ giao" màu đỏ tức là đơn chưa được giao</li>
                 </ul>
                 
-                <h3>2. Giao hàng -Phần này do phụ trách điều phối vận chuyển- giao hàng hay người hỗ trợ giao hàng thực hiện</h3>
+                <h3>2. Giao hàng</h3>
                 <ul>
-                    <li>Nhấp vào ô "Tên khách hàng" để chọn nhanh từ các đơn hàng "Chờ giao".</li>
-                    <li>Mã đơn hàng và Địa chỉ sẽ được tự động điền.</li>
-                    <li>Nhập/chọn "Tên người giao" và "Ngày giao".</li>
-                    <li>Nhấn nút "Ký tên" (<i class="fas fa-signature"></i>) để ký tên bằng tay.</li>
-                    <li>Nhập "Ghi chú giao hàng" nếu có thông tin cần lưu ý về quá trình giao hàng.</li>
-                    <li>Chỉ nhấn "Giao xong" khi đơn hàng đã được giao thành công.</li>
-                    <li>Khi "Giao xong", đơn hàng bên tab "Đóng hàng" sẽ tự động cập nhật là "Đã kết thúc".</li>
+                    <li>Nhấp vào ô "Tên khách hàng" để chọn nhanh từ các đơn hàng "Chờ giao"</li>
+                    <li>Mã đơn hàng và Địa chỉ sẽ được tự động điền</li>
+                    <li>Nhập/chọn "Tên người giao" và "Ngày giao"</li>
+                    <li>Nhấn nút "Ký tên" để ký tên bằng tay</li>
+                    <li>Chỉ nhấn "Giao xong" khi đơn hàng đã được giao thành công</li>
                 </ul>
                 
-                <h3>3. Báo cáo</h3>
+                <h3>3. ĐÁNH GIÁ KPI</h3>
                 <ul>
-                    <li>Chọn loại báo cáo (ngày/tuần/tháng) hoặc khoảng thời gian cụ thể</li>
-                    <li>Nhấn "Tạo báo cáo" để xem dữ liệu (bao gồm cả chữ ký và ghi chú)</li>
-                    <li>Báo cáo đóng hàng sẽ tự động đối soát với báo cáo giao hàng để hiển thị trạng thái chính xác nhất.</li>
-                    <li>Xuất Excel để tải báo cáo về máy tính (Lưu ý: Excel không xuất được ảnh chữ ký)</li>
-                    <li>Xóa báo cáo để xóa dữ liệu đã chọn</li>
-                    <li>Nhấn "Đồng bộ trạng thái" để cập nhật lại trạng thái đóng hàng theo dữ liệu giao hàng mới nhất</li>
+                    <li>Hệ thống tự động chạy đánh giá lúc 17:00 hàng ngày</li>
+                    <li>Phát hiện "Lỗi giao chậm" khi số đơn chờ giao > 2 đơn</li>
+                    <li>Điểm KPI bị trừ khi có lỗi giao chậm</li>
+                    <li>Thống kê lỗi theo nhân viên để đánh giá hiệu suất</li>
+                    <li>Có thể chạy đánh giá thủ công hoặc cho cả tháng</li>
                 </ul>
                 
-                <h3>4. Quản lý</h3>
+                <h3>4. Báo cáo</h3>
                 <ul>
-                    <li>Tìm kiếm đơn hàng theo mã đơn hoặc tên khách hàng</li>
-                    <li>Chỉnh sửa hoặc xóa đơn hàng nếu có sai sót (có thể sửa cả chữ ký và ghi chú)</li>
+                    <li>Xem báo cáo theo ngày, tuần, tháng</li>
+                    <li>Xuất Excel để tải báo cáo về máy tính</li>
+                    <li>Đồng bộ trạng thái để cập nhật đúng tình trạng đơn hàng</li>
                 </ul>
             </div>
         </div>
@@ -1105,6 +1341,8 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
         let currentSignatureTarget = null; 
         let pendingPackingData = []; 
         let completedDeliveriesSet = new Set();
+        let evaluationData = [];
+        let autoEvaluationTimer = null;
         
         // Khởi tạo khi trang được tải
         document.addEventListener('DOMContentLoaded', function() {
@@ -1113,13 +1351,18 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             document.getElementById('packingDate').value = today;
             document.getElementById('reportDate').value = today;
             document.getElementById('packingReportDate').value = today;
+            document.getElementById('evaluationDate').value = today;
             
             loadDeliveryData();
             loadPackingData();
             loadCustomerData();
             loadDelivererData(); 
             loadPendingPackingData(); 
-            loadCompletedDeliveries(); // Tải danh sách đã giao để đối soát
+            loadCompletedDeliveries();
+            loadEvaluationData();
+            updateEvaluationStats();
+            loadEmployeeStats();
+            setupAutoEvaluation();
 
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -1139,6 +1382,10 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             initCustomerAutocomplete(); 
             initPendingPackingAutocomplete(); 
             initDelivererAutocomplete(); 
+            autoUppercaseOrderId();
+            
+            // Lên lịch đánh giá tự động
+            scheduleAutoEvaluation();
         });
         
         function switchTab(tabId) {
@@ -1148,6 +1395,12 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 tab.classList.remove('active');
                 if (tab.getAttribute('data-tab') === tabId) tab.classList.add('active');
             });
+            
+            if (tabId === 'evaluation') {
+                loadEvaluationData();
+                updateEvaluationStats();
+                loadEmployeeStats();
+            }
         }
         
         function autoUppercaseOrderId() {
@@ -1159,7 +1412,7 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             });
         }
         
-        // Tải các đơn hàng "Chờ giao"
+        // ================== PHẦN ĐÓNG HÀNG ==================
         function loadPendingPackingData() {
             pendingPackingData = [];
             database.ref('packings').orderByChild('timestamp').once('value')
@@ -1176,31 +1429,26 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => console.error('Lỗi khi tải dữ liệu chờ giao:', error));
         }
 
-        // Tải toàn bộ danh sách đơn đã giao để đối soát báo cáo (chuyển sang async)
         async function loadCompletedDeliveries() {
             completedDeliveriesSet.clear();
             try {
                 const snapshot = await database.ref('deliveries').once('value');
                 snapshot.forEach(childSnapshot => {
                     const delivery = childSnapshot.val();
-                    // Tạo một key tổng hợp để kiểm tra (Mã đơn + Tên KH)
                     const compositeKey = delivery.orderId + "||" + delivery.customerName;
                     completedDeliveriesSet.add(compositeKey);
                 });
-                console.log(`Đã tải ${completedDeliveriesSet.size} đơn hàng đã giao để đối soát.`);
             } catch (error) {
                 console.error('Lỗi khi tải dữ liệu giao hàng đã hoàn tất:', error);
             }
         }
 
-        // Cập nhật trạng thái đóng hàng (kiểm tra chéo Mã đơn + Tên KH)
         function updatePackingStatus(orderId, customerName) {
             database.ref('packings').orderByChild('orderId').equalTo(orderId).once('value')
                 .then(snapshot => {
                     if (snapshot.exists()) {
                         snapshot.forEach(childSnapshot => {
                             const packing = childSnapshot.val();
-                            
                             if (packing.customerName === customerName) {
                                 database.ref('packings/' + childSnapshot.key).update({ isDelivered: true })
                                     .then(() => {
@@ -1208,8 +1456,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                                         loadPendingPackingData(); 
                                     })
                                     .catch(error => console.error('Lỗi khi cập nhật trạng thái đóng hàng:', error));
-                            } else {
-                                console.warn(`Mã đơn hàng ${orderId} khớp nhưng tên KH không khớp. Giao hàng: ${customerName}, Đóng gói: ${packing.customerName}`);
                             }
                         });
                     }
@@ -1217,7 +1463,148 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => console.error('Lỗi khi tìm đơn hàng đóng gói:', error));
         }
 
-        // Lưu dữ liệu giao hàng
+        function savePacking() {
+            const orderId = document.getElementById('packingOrderId').value.toUpperCase();
+            const customerName = document.getElementById('packingCustomerName').value;
+            const address = document.getElementById('packingAddress').value;
+            const packingDate = document.getElementById('packingDate').value;
+            const notes = document.getElementById('packingNotes').value;
+            
+            if (!orderId || !customerName || !address || !packingDate) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+            
+            const packingData = {
+                orderId, customerName, address, packingDate,
+                notes: notes || '',
+                isDelivered: false,
+                timestamp: new Date().toISOString()
+            };
+            
+            database.ref('packings').push().set(packingData)
+                .then(() => {
+                    alert('Đã lưu thông tin đóng hàng thành công!');
+                    document.getElementById('packingOrderId').value = '';
+                    document.getElementById('packingCustomerName').value = '';
+                    document.getElementById('packingAddress').value = '';
+                    document.getElementById('packingNotes').value = '';
+                    loadPackingData();
+                    loadPendingPackingData(); 
+                })
+                .catch(error => alert('Có lỗi xảy ra khi lưu dữ liệu: ' + error.message));
+        }
+        
+        function loadPackingData() {
+            const today = new Date().toISOString().split('T')[0];
+            const packingTableBody = document.getElementById('packingTableBody');
+            packingTableBody.innerHTML = '';
+            
+            database.ref('packings').orderByChild('timestamp').once('value')
+                .then(snapshot => {
+                    let todayPackedCount = 0, waitingDeliveryCount = 0, deliveredCount = 0;
+                    
+                    snapshot.forEach(childSnapshot => {
+                        const packing = childSnapshot.val();
+                        if (packing.packingDate === today) todayPackedCount++;
+                        if (!packing.isDelivered) waitingDeliveryCount++; else deliveredCount++;
+                        
+                        if (packing.packingDate === today) {
+                            const row = packingTableBody.insertRow();
+                            const statusClass = packing.isDelivered ? 'packed' : 'not-packed';
+                            const statusText = packing.isDelivered ? 'Đã kết thúc' : 'Chờ giao';
+                            row.innerHTML = `
+                                <td>${packing.orderId}</td>
+                                <td>${packing.customerName}</td>
+                                <td>${packing.address}</td>
+                                <td><span class="packing-status ${statusClass}">${statusText}</span></td>
+                                <td class="action-btns">
+                                    <button class="btn btn-sm btn-warning" onclick="editPacking('${childSnapshot.key}')">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </button>
+                                </td>`;
+                        }
+                    });
+                    
+                    document.getElementById('todayPackedCount').textContent = todayPackedCount;
+                    document.getElementById('waitingDeliveryCount').textContent = waitingDeliveryCount;
+                    document.getElementById('deliveredCount').textContent = deliveredCount;
+                })
+                .catch(error => console.error('Lỗi khi tải dữ liệu đóng hàng:', error));
+        }
+        
+        function editPacking(key) {
+            currentPackingEditKey = key;
+            database.ref('packings/' + key).once('value')
+                .then(snapshot => {
+                    const packing = snapshot.val();
+                    document.getElementById('editPackingKey').value = key;
+                    document.getElementById('editPackingOrderId').value = packing.orderId;
+                    document.getElementById('editPackingCustomerName').value = packing.customerName;
+                    document.getElementById('editPackingAddress').value = packing.address;
+                    document.getElementById('editPackingDate').value = packing.packingDate;
+                    document.getElementById('editPackingStatus').value = packing.isDelivered;
+                    document.getElementById('editPackingNotes').value = packing.notes || '';
+                    document.getElementById('editPackingModal').style.display = 'block';
+                })
+                .catch(error => console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error));
+        }
+        
+        function updatePacking() {
+            const key = document.getElementById('editPackingKey').value;
+            const orderId = document.getElementById('editPackingOrderId').value.toUpperCase();
+            const customerName = document.getElementById('editPackingCustomerName').value;
+            const address = document.getElementById('editPackingAddress').value;
+            const packingDate = document.getElementById('editPackingDate').value;
+            const isDelivered = document.getElementById('editPackingStatus').value === 'true';
+            const notes = document.getElementById('editPackingNotes').value;
+            
+            if (!orderId || !customerName || !address || !packingDate) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+            
+            const updatedData = {
+                orderId, customerName, address, packingDate, isDelivered,
+                notes: notes || '',
+                timestamp: new Date().toISOString()
+            };
+            
+            database.ref('packings/' + key).update(updatedData)
+                .then(() => {
+                    alert('Đã cập nhật thông tin đóng hàng thành công!');
+                    closePackingModal();
+                    loadPackingData();
+                    loadPendingPackingData(); 
+
+                    if (isDelivered) {
+                        const compositeKey = orderId + "||" + customerName;
+                        completedDeliveriesSet.add(compositeKey);
+                    }
+                })
+                .catch(error => alert('Có lỗi xảy ra khi cập nhật dữ liệu: ' + error.message));
+        }
+        
+        function confirmDeletePacking(key) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) deletePacking(key);
+        }
+        
+        function deletePacking(key) {
+            database.ref('packings/' + key).remove()
+                .then(() => { 
+                    alert('Đã xóa đơn hàng thành công!'); 
+                    closePackingModal(); 
+                    loadPackingData(); 
+                    loadPendingPackingData(); 
+                })
+                .catch(error => alert('Có lỗi xảy ra khi xóa dữ liệu: ' + error.message));
+        }
+        
+        function closePackingModal() { 
+            document.getElementById('editPackingModal').style.display = 'none'; 
+        }
+        
+        // ================== PHẦN GIAO HÀNG ==================
         function saveDelivery() {
             const orderId = document.getElementById('orderId').value.toUpperCase();
             const deliveryDate = document.getElementById('deliveryDate').value;
@@ -1249,7 +1636,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                         const compositeKey = orderId + "||" + customerName;
                         completedDeliveriesSet.add(compositeKey);
 
-                        // Reset form
                         document.getElementById('orderId').value = '';
                         document.getElementById('customerName').value = '';
                         document.getElementById('deliveryAddress').value = '';
@@ -1265,40 +1651,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             });
         }
         
-        // Lưu dữ liệu đóng hàng
-        function savePacking() {
-            const orderId = document.getElementById('packingOrderId').value.toUpperCase();
-            const customerName = document.getElementById('packingCustomerName').value;
-            const address = document.getElementById('packingAddress').value;
-            const packingDate = document.getElementById('packingDate').value;
-            const notes = document.getElementById('packingNotes').value; // BỔ SUNG: Lấy dữ liệu ghi chú
-            
-            if (!orderId || !customerName || !address || !packingDate) {
-                alert('Vui lòng điền đầy đủ thông tin!');
-                return;
-            }
-            
-            const packingData = {
-                orderId, customerName, address, packingDate,
-                notes: notes || '', // BỔ SUNG: Lưu ghi chú vào object
-                isDelivered: false,
-                timestamp: new Date().toISOString()
-            };
-            
-            database.ref('packings').push().set(packingData)
-                .then(() => {
-                    alert('Đã lưu thông tin đóng hàng thành công!');
-                    document.getElementById('packingOrderId').value = '';
-                    document.getElementById('packingCustomerName').value = '';
-                    document.getElementById('packingAddress').value = '';
-                    document.getElementById('packingNotes').value = ''; // Reset ô ghi chú
-                    loadPackingData();
-                    loadPendingPackingData(); 
-                })
-                .catch(error => alert('Có lỗi xảy ra khi lưu dữ liệu: ' + error.message));
-        }
-        
-        // Tải dữ liệu giao hàng
         function loadDeliveryData() {
             const today = new Date().toISOString().split('T')[0];
             const deliveryTableBody = document.getElementById('deliveryTableBody');
@@ -1342,58 +1694,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => console.error('Lỗi khi tải dữ liệu giao hàng:', error));
         }
         
-        // Tải dữ liệu đóng hàng
-        function loadPackingData() {
-            const today = new Date().toISOString().split('T')[0];
-            const packingTableBody = document.getElementById('packingTableBody');
-            packingTableBody.innerHTML = '';
-            
-            database.ref('packings').orderByChild('timestamp').once('value')
-                .then(snapshot => {
-                    let todayPackedCount = 0, waitingDeliveryCount = 0, deliveredCount = 0;
-                    
-                    snapshot.forEach(childSnapshot => {
-                        const packing = childSnapshot.val();
-                        if (packing.packingDate === today) todayPackedCount++;
-                        if (!packing.isDelivered) waitingDeliveryCount++; else deliveredCount++;
-                        
-                        if (packing.packingDate === today) {
-                            const row = packingTableBody.insertRow();
-                            const statusClass = packing.isDelivered ? 'packed' : 'not-packed';
-                            const statusText = packing.isDelivered ? 'Đã kết thúc' : 'Chờ giao';
-                            row.innerHTML = `
-                                <td>${packing.orderId}</td>
-                                <td>${packing.customerName}</td>
-                                <td>${packing.address}</td>
-                                <td><span class="packing-status ${statusClass}">${statusText}</span></td>
-                                <td class="action-btns">
-                                    <button class="btn btn-sm btn-warning" onclick="editPacking('${childSnapshot.key}')">
-                                        <i class="fas fa-edit"></i> Sửa
-                                    </button>
-                                </td>`;
-                        }
-                    });
-                    
-                    document.getElementById('todayPackedCount').textContent = todayPackedCount;
-                    document.getElementById('waitingDeliveryCount').textContent = waitingDeliveryCount;
-                    document.getElementById('deliveredCount').textContent = deliveredCount;
-                })
-                .catch(error => console.error('Lỗi khi tải dữ liệu đóng hàng:', error));
-        }
-
-        // Tải dữ liệu người giao hàng
-        function loadDelivererData() {
-            database.ref('deliverers').once('value')
-                .then(snapshot => {
-                    delivererData = [];
-                    snapshot.forEach(childSnapshot => {
-                        delivererData.push(childSnapshot.val());
-                    });
-                })
-                .catch(error => console.error('Lỗi khi tải dữ liệu người giao:', error));
-        }
-        
-        // Chỉnh sửa giao hàng
         function editDelivery(key) {
             currentEditKey = key;
             database.ref('deliveries/' + key).once('value')
@@ -1424,25 +1724,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error));
         }
         
-        // Chỉnh sửa đóng hàng
-        function editPacking(key) {
-            currentPackingEditKey = key;
-            database.ref('packings/' + key).once('value')
-                .then(snapshot => {
-                    const packing = snapshot.val();
-                    document.getElementById('editPackingKey').value = key;
-                    document.getElementById('editPackingOrderId').value = packing.orderId;
-                    document.getElementById('editPackingCustomerName').value = packing.customerName;
-                    document.getElementById('editPackingAddress').value = packing.address;
-                    document.getElementById('editPackingDate').value = packing.packingDate;
-                    document.getElementById('editPackingStatus').value = packing.isDelivered;
-                    document.getElementById('editPackingNotes').value = packing.notes || ''; // BỔ SUNG: Load ghi chú vào modal
-                    document.getElementById('editPackingModal').style.display = 'block';
-                })
-                .catch(error => console.error('Lỗi khi tải dữ liệu chỉnh sửa:', error));
-        }
-        
-        // Cập nhật giao hàng
         function updateDelivery() {
             const key = document.getElementById('editKey').value;
             const customerName = document.getElementById('editCustomerName').value;
@@ -1480,43 +1761,6 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => alert('Có lỗi xảy ra khi cập nhật dữ liệu: ' + error.message));
         }
         
-        // Cập nhật đóng hàng
-        function updatePacking() {
-            const key = document.getElementById('editPackingKey').value;
-            const orderId = document.getElementById('editPackingOrderId').value.toUpperCase();
-            const customerName = document.getElementById('editPackingCustomerName').value;
-            const address = document.getElementById('editPackingAddress').value;
-            const packingDate = document.getElementById('editPackingDate').value;
-            const isDelivered = document.getElementById('editPackingStatus').value === 'true';
-            const notes = document.getElementById('editPackingNotes').value; // BỔ SUNG: Lấy ghi chú từ modal
-            
-            if (!orderId || !customerName || !address || !packingDate) {
-                alert('Vui lòng điền đầy đủ thông tin!');
-                return;
-            }
-            
-            const updatedData = {
-                orderId, customerName, address, packingDate, isDelivered,
-                notes: notes || '', // BỔ SUNG: Update ghi chú
-                timestamp: new Date().toISOString()
-            };
-            
-            database.ref('packings/' + key).update(updatedData)
-                .then(() => {
-                    alert('Đã cập nhật thông tin đóng hàng thành công!');
-                    closePackingModal();
-                    loadPackingData();
-                    loadPendingPackingData(); 
-
-                    if (isDelivered) {
-                        const compositeKey = orderId + "||" + customerName;
-                        completedDeliveriesSet.add(compositeKey);
-                    }
-                })
-                .catch(error => alert('Có lỗi xảy ra khi cập nhật dữ liệu: ' + error.message));
-        }
-        
-        // Xác nhận xóa & Xóa
         function confirmDeleteDelivery(key) {
             if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) deleteDelivery(key);
         }
@@ -1538,42 +1782,611 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                     .catch(error => alert('Có lỗi xảy ra khi xóa dữ liệu: ' + error.message));
             });
         }
-
-        function confirmDeletePacking(key) {
-            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) deletePacking(key);
-        }
-        function deletePacking(key) {
-            database.ref('packings/' + key).remove()
-                .then(() => { 
-                    alert('Đã xóa đơn hàng thành công!'); 
-                    closePackingModal(); 
-                    loadPackingData(); 
-                    loadPendingPackingData(); 
-                })
-                .catch(error => alert('Có lỗi xảy ra khi xóa dữ liệu: ' + error.message));
-        }
         
-        // Modal controls
         function closeModal() { 
             document.getElementById('editModal').style.display = 'none'; 
             document.getElementById('editDelivererName_sig_data').value = '';
             document.getElementById('editDelivererName_sig_preview').src = '';
             document.getElementById('editDelivererName_sig_preview').style.display = 'none';
         }
-        function closePackingModal() { document.getElementById('editPackingModal').style.display = 'none'; }
+        
         function showTransferConfirmModal(callback) {
             const modal = document.getElementById('transferConfirmModal');
             modal.style.display = 'block';
             document.getElementById('confirmTransferBtn').onclick = () => { modal.style.display = 'none'; callback(); };
         }
-        function closeTransferConfirmModal() { document.getElementById('transferConfirmModal').style.display = 'none'; }
-        function showHelpModal() { document.getElementById('helpModal').style.display = 'block'; }
-        function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
         
-        function showAddDelivererModal() { document.getElementById('addDelivererModal').style.display = 'block'; }
-        function closeAddDelivererModal() { document.getElementById('addDelivererModal').style.display = 'none'; }
+        function closeTransferConfirmModal() { 
+            document.getElementById('transferConfirmModal').style.display = 'none'; 
+        }
         
-        // Các hàm cho Modal Chữ ký
+        // ================== PHẦN ĐÁNH GIÁ ==================
+        async function runDailyEvaluation() {
+            const evalDate = document.getElementById('evaluationDate').value || new Date().toISOString().split('T')[0];
+            
+            document.getElementById('evaluationSpinner').style.display = 'block';
+            
+            try {
+                // Kiểm tra xem đã đánh giá ngày này chưa
+                const existingEval = await database.ref('evaluations')
+                    .orderByChild('evaluationDate')
+                    .equalTo(evalDate)
+                    .once('value');
+                
+                if (existingEval.exists()) {
+                    if (!confirm(`Ngày ${evalDate} đã được đánh giá. Bạn có muốn chạy lại không?`)) {
+                        document.getElementById('evaluationSpinner').style.display = 'none';
+                        return;
+                    }
+                }
+                
+                // Lấy tất cả đơn đóng hàng của ngày đó
+                const packingSnapshot = await database.ref('packings').orderByChild('packingDate').equalTo(evalDate).once('value');
+                
+                // Lấy tất cả đơn giao hàng của ngày đó
+                const deliverySnapshot = await database.ref('deliveries').orderByChild('deliveryDate').equalTo(evalDate).once('value');
+                
+                let pendingOrders = [];
+                let deliveredOrderIds = new Set();
+                
+                // Tạo danh sách các đơn đã giao
+                deliverySnapshot.forEach(child => {
+                    deliveredOrderIds.add(child.val().orderId);
+                });
+                
+                // Tìm các đơn đã đóng nhưng chưa giao
+                packingSnapshot.forEach(child => {
+                    const packing = child.val();
+                    if (!deliveredOrderIds.has(packing.orderId)) {
+                        pendingOrders.push({
+                            orderId: packing.orderId,
+                            customerName: packing.customerName,
+                            address: packing.address,
+                            packingDate: packing.packingDate
+                        });
+                    }
+                });
+                
+                const pendingCount = pendingOrders.length;
+                const hasError = pendingCount > 2; // Lỗi nếu > 2 đơn chờ giao
+                
+                // Tìm nhân viên phụ trách (lấy từ đơn giao hàng gần nhất)
+                let responsibleEmployee = "Chưa xác định";
+                if (deliverySnapshot.exists()) {
+                    let latestDelivery = null;
+                    deliverySnapshot.forEach(child => {
+                        const delivery = child.val();
+                        if (!latestDelivery || delivery.timestamp > latestDelivery.timestamp) {
+                            latestDelivery = delivery;
+                            responsibleEmployee = delivery.delivererName;
+                        }
+                    });
+                }
+                
+                // Tính điểm KPI
+                const kpiScore = hasError ? Math.max(0, 100 - (pendingCount * 10)) : 100;
+                
+                // Tạo bản ghi đánh giá
+                const evaluationRecord = {
+                    evaluationDate: evalDate,
+                    checkTime: new Date().toISOString(),
+                    pendingOrderCount: pendingCount,
+                    hasError: hasError,
+                    errorType: hasError ? "GIAO CHẬM" : "ĐẠT",
+                    pendingOrders: pendingOrders,
+                    responsibleEmployee: responsibleEmployee,
+                    kpiScore: kpiScore,
+                    notes: hasError ? 
+                        `Có ${pendingCount} đơn chưa giao sau 17:00 - TRỪ ${100 - kpiScore} ĐIỂM KPI` : 
+                        "Hoàn thành tốt - KHÔNG CÓ LỖI GIAO CHẬM",
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Lưu vào Firebase
+                await database.ref('evaluations').push().set(evaluationRecord);
+                
+                // Cập nhật giao diện
+                updateEvaluationStats();
+                loadEvaluationData();
+                loadEmployeeStats();
+                
+                // Hiển thị thông báo
+                if (hasError) {
+                    alert(`⚠️ PHÁT HIỆN LỖI GIAO CHẬM!\n\nNgày: ${evalDate}\nSố đơn chờ giao: ${pendingCount}\nĐánh giá: TRỪ ${100 - kpiScore} ĐIỂM KPI\n\nĐơn hàng bị ảnh hưởng:\n${pendingOrders.map(o => `• ${o.orderId} - ${o.customerName}`).join('\n')}`);
+                } else {
+                    alert(`✅ ĐÁNH GIÁ HOÀN THÀNH!\n\nNgày: ${evalDate}\nSố đơn chờ giao: ${pendingCount}\nĐánh giá: ĐẠT KPI (100 điểm)`);
+                }
+                
+            } catch (error) {
+                console.error('Lỗi khi chạy đánh giá:', error);
+                alert('Có lỗi xảy ra khi chạy đánh giá: ' + error.message);
+            } finally {
+                document.getElementById('evaluationSpinner').style.display = 'none';
+            }
+        }
+        
+        async function runEvaluationForCurrentMonth() {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            
+            if (!confirm(`Chạy đánh giá cho toàn bộ tháng ${now.getMonth() + 1}/${now.getFullYear()}?\nTừ ${firstDay} đến ${lastDay}`)) {
+                return;
+            }
+            
+            document.getElementById('evaluationSpinner').style.display = 'block';
+            
+            try {
+                let currentDate = new Date(firstDay);
+                const endDate = new Date(lastDay);
+                let evaluatedDays = 0;
+                let errorDays = 0;
+                
+                while (currentDate <= endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    
+                    // Kiểm tra xem đã đánh giá ngày này chưa
+                    const existingEval = await database.ref('evaluations')
+                        .orderByChild('evaluationDate')
+                        .equalTo(dateStr)
+                        .once('value');
+                    
+                    if (!existingEval.exists()) {
+                        // Chạy đánh giá cho ngày này
+                        await runEvaluationForDate(dateStr);
+                        evaluatedDays++;
+                    }
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                alert(`✅ ĐÃ HOÀN THÀNH ĐÁNH GIÁ THÁNG!\n\nSố ngày đã đánh giá: ${evaluatedDays}\nVui lòng kiểm tra tab ĐÁNH GIÁ để xem kết quả.`);
+                
+            } catch (error) {
+                console.error('Lỗi khi chạy đánh giá tháng:', error);
+                alert('Có lỗi xảy ra: ' + error.message);
+            } finally {
+                document.getElementById('evaluationSpinner').style.display = 'none';
+                updateEvaluationStats();
+                loadEvaluationData();
+                loadEmployeeStats();
+            }
+        }
+        
+        async function runEvaluationForDate(dateStr) {
+            try {
+                // Lấy tất cả đơn đóng hàng của ngày đó
+                const packingSnapshot = await database.ref('packings').orderByChild('packingDate').equalTo(dateStr).once('value');
+                
+                // Lấy tất cả đơn giao hàng của ngày đó
+                const deliverySnapshot = await database.ref('deliveries').orderByChild('deliveryDate').equalTo(dateStr).once('value');
+                
+                let pendingOrders = [];
+                let deliveredOrderIds = new Set();
+                
+                // Tạo danh sách các đơn đã giao
+                deliverySnapshot.forEach(child => {
+                    deliveredOrderIds.add(child.val().orderId);
+                });
+                
+                // Tìm các đơn đã đóng nhưng chưa giao
+                packingSnapshot.forEach(child => {
+                    const packing = child.val();
+                    if (!deliveredOrderIds.has(packing.orderId)) {
+                        pendingOrders.push({
+                            orderId: packing.orderId,
+                            customerName: packing.customerName,
+                            address: packing.address,
+                            packingDate: packing.packingDate
+                        });
+                    }
+                });
+                
+                const pendingCount = pendingOrders.length;
+                const hasError = pendingCount > 2;
+                
+                // Tìm nhân viên phụ trách
+                let responsibleEmployee = "Chưa xác định";
+                if (deliverySnapshot.exists()) {
+                    let latestDelivery = null;
+                    deliverySnapshot.forEach(child => {
+                        const delivery = child.val();
+                        if (!latestDelivery || delivery.timestamp > latestDelivery.timestamp) {
+                            latestDelivery = delivery;
+                            responsibleEmployee = delivery.delivererName;
+                        }
+                    });
+                }
+                
+                // Tính điểm KPI
+                const kpiScore = hasError ? Math.max(0, 100 - (pendingCount * 10)) : 100;
+                
+                // Tạo bản ghi đánh giá
+                const evaluationRecord = {
+                    evaluationDate: dateStr,
+                    checkTime: new Date().toISOString(),
+                    pendingOrderCount: pendingCount,
+                    hasError: hasError,
+                    errorType: hasError ? "GIAO CHẬM" : "ĐẠT",
+                    pendingOrders: pendingOrders,
+                    responsibleEmployee: responsibleEmployee,
+                    kpiScore: kpiScore,
+                    notes: hasError ? 
+                        `Có ${pendingCount} đơn chưa giao sau 17:00 - TRỪ ${100 - kpiScore} ĐIỂM KPI` : 
+                        "Hoàn thành tốt",
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Lưu vào Firebase
+                await database.ref('evaluations').push().set(evaluationRecord);
+                
+            } catch (error) {
+                console.error(`Lỗi khi đánh giá ngày ${dateStr}:`, error);
+            }
+        }
+        
+        async function loadEvaluationData() {
+            try {
+                const snapshot = await database.ref('evaluations').orderByChild('timestamp').once('value');
+                evaluationData = [];
+                const tableBody = document.getElementById('evaluationTableBody');
+                tableBody.innerHTML = '';
+                
+                let count = 0;
+                snapshot.forEach(child => {
+                    const evalRecord = child.val();
+                    evalRecord.key = child.key;
+                    evaluationData.push(evalRecord);
+                    
+                    count++;
+                    const row = tableBody.insertRow();
+                    
+                    // Định dạng trạng thái
+                    const statusClass = evalRecord.hasError ? 'evaluation-error' : 'evaluation-good';
+                    const statusText = evalRecord.hasError ? 'LỖI' : 'ĐẠT';
+                    
+                    // Định dạng KPI
+                    const kpiClass = evalRecord.kpiScore >= 80 ? 'kpi-good' : 
+                                    evalRecord.kpiScore >= 50 ? 'kpi-warning' : 'kpi-bad';
+                    
+                    // Định dạng danh sách đơn lỗi
+                    let errorDetails = '';
+                    if (evalRecord.pendingOrders && evalRecord.pendingOrders.length > 0) {
+                        errorDetails = `<div class="error-details">`;
+                        evalRecord.pendingOrders.forEach(order => {
+                            errorDetails += `<div>• ${order.orderId} - ${order.customerName}</div>`;
+                        });
+                        errorDetails += `</div>`;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${count}</td>
+                        <td>${evalRecord.evaluationDate}</td>
+                        <td>${evalRecord.pendingOrderCount}</td>
+                        <td><span class="evaluation-badge ${statusClass}">${statusText}</span></td>
+                        <td class="kpi-score ${kpiClass}">${evalRecord.kpiScore} điểm</td>
+                        <td>${errorDetails}</td>
+                        <td>${evalRecord.responsibleEmployee || 'Chưa xác định'}</td>
+                        <td>${evalRecord.notes || ''}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteEvaluationRecord('${child.key}')">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    `;
+                });
+                
+                if (count === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 20px;">
+                                <i class="fas fa-clipboard-check" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
+                                <p>Chưa có dữ liệu đánh giá</p>
+                                <button class="btn btn-primary" onclick="runDailyEvaluation()">
+                                    <i class="fas fa-play"></i> Chạy đánh giá ngày hôm nay
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu đánh giá:', error);
+            }
+        }
+        
+        async function updateEvaluationStats() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const snapshot = await database.ref('evaluations').once('value');
+                
+                let todayPending = 0;
+                let todayErrors = 0;
+                let monthErrors = 0;
+                const currentMonth = new Date().getMonth();
+                
+                snapshot.forEach(child => {
+                    const evalRecord = child.val();
+                    
+                    if (evalRecord.evaluationDate === today) {
+                        todayPending = evalRecord.pendingOrderCount;
+                        if (evalRecord.hasError) todayErrors++;
+                    }
+                    
+                    const recordMonth = new Date(evalRecord.evaluationDate).getMonth();
+                    if (recordMonth === currentMonth && evalRecord.hasError) {
+                        monthErrors++;
+                    }
+                });
+                
+                document.getElementById('todayPendingCount').textContent = todayPending;
+                document.getElementById('todayErrorsCount').textContent = todayErrors;
+                document.getElementById('monthErrorsCount').textContent = monthErrors;
+                
+            } catch (error) {
+                console.error('Lỗi khi cập nhật thống kê:', error);
+            }
+        }
+        
+        async function loadEmployeeStats() {
+            try {
+                const snapshot = await database.ref('evaluations').once('value');
+                const employeeStats = {};
+                
+                // Tổng hợp dữ liệu
+                snapshot.forEach(child => {
+                    const evalRecord = child.val();
+                    if (evalRecord.hasError && evalRecord.responsibleEmployee && evalRecord.responsibleEmployee !== 'Chưa xác định') {
+                        const employee = evalRecord.responsibleEmployee;
+                        
+                        if (!employeeStats[employee]) {
+                            employeeStats[employee] = {
+                                errorCount: 0,
+                                pendingOrders: 0,
+                                totalEvaluations: 0
+                            };
+                        }
+                        
+                        employeeStats[employee].errorCount++;
+                        employeeStats[employee].pendingOrders += evalRecord.pendingOrderCount;
+                        employeeStats[employee].totalEvaluations++;
+                    }
+                });
+                
+                // Hiển thị
+                const tableBody = document.getElementById('employeeStatsTableBody');
+                tableBody.innerHTML = '';
+                
+                let count = 0;
+                for (const [employee, stats] of Object.entries(employeeStats)) {
+                    count++;
+                    const row = tableBody.insertRow();
+                    const errorRate = stats.totalEvaluations > 0 ? 
+                        ((stats.errorCount / stats.totalEvaluations) * 100).toFixed(1) : '0.0';
+                    const kpiScore = Math.max(0, 100 - (stats.errorCount * 10));
+                    
+                    const kpiClass = kpiScore >= 80 ? 'kpi-good' : 
+                                    kpiScore >= 60 ? 'kpi-warning' : 'kpi-bad';
+                    
+                    row.innerHTML = `
+                        <td>${count}</td>
+                        <td>
+                            <div class="employee-row">
+                                <div class="employee-avatar">${employee.charAt(0)}</div>
+                                <strong>${employee}</strong>
+                            </div>
+                        </td>
+                        <td>${stats.errorCount}</td>
+                        <td>${stats.pendingOrders}</td>
+                        <td>${errorRate}%</td>
+                        <td class="kpi-score ${kpiClass}">${kpiScore} điểm</td>
+                    `;
+                }
+                
+                if (count === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px;">
+                                Chưa có dữ liệu thống kê nhân viên
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Lỗi khi tải thống kê nhân viên:', error);
+            }
+        }
+        
+        function deleteEvaluationRecord(key) {
+            if (confirm('Bạn có chắc muốn xóa bản ghi đánh giá này?')) {
+                database.ref('evaluations/' + key).remove()
+                    .then(() => {
+                        alert('Đã xóa bản ghi đánh giá!');
+                        loadEvaluationData();
+                        updateEvaluationStats();
+                        loadEmployeeStats();
+                    })
+                    .catch(error => alert('Lỗi khi xóa: ' + error.message));
+            }
+        }
+        
+        function clearAllEvaluationData() {
+            if (confirm('⚠️ CẢNH BÁO: Bạn sẽ xóa TẤT CẢ dữ liệu đánh giá KPI!\n\nHành động này không thể hoàn tác. Tiếp tục?')) {
+                database.ref('evaluations').remove()
+                    .then(() => {
+                        alert('✅ Đã xóa tất cả dữ liệu đánh giá!');
+                        loadEvaluationData();
+                        updateEvaluationStats();
+                        loadEmployeeStats();
+                    })
+                    .catch(error => alert('Lỗi khi xóa: ' + error.message));
+            }
+        }
+        
+        function filterEvaluationErrors() {
+            const filterType = document.getElementById('errorFilterType').value;
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            const tableBody = document.getElementById('evaluationTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            for (let row of rows) {
+                if (row.cells.length < 2) continue;
+                
+                const dateCell = row.cells[1].textContent;
+                const evalDate = new Date(dateCell);
+                
+                let showRow = false;
+                
+                switch (filterType) {
+                    case 'today':
+                        showRow = dateCell === today;
+                        break;
+                    case 'week':
+                        showRow = evalDate >= startOfWeek;
+                        break;
+                    case 'month':
+                        showRow = evalDate >= startOfMonth;
+                        break;
+                    case 'all':
+                        showRow = true;
+                        break;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            }
+        }
+        
+        function exportEvaluationToExcel() {
+            const table = document.getElementById('evaluationTable');
+            if (table.rows.length <= 1) { 
+                alert('Không có dữ liệu để xuất!'); 
+                return; 
+            }
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, 'Đánh giá KPI');
+            XLSX.writeFile(wb, 'danh_gia_kpi.xlsx');
+        }
+        
+        // ================== CÀI ĐẶT ĐÁNH GIÁ TỰ ĐỘNG ==================
+        function setupAutoEvaluation() {
+            document.getElementById('autoEvalModal').style.display = 'block';
+            
+            // Load cài đặt hiện tại
+            const settings = JSON.parse(localStorage.getItem('autoEvalSettings') || '{}');
+            document.getElementById('autoEvalTime').value = settings.autoEvalTime || '17:00';
+            document.getElementById('errorThreshold').value = settings.errorThreshold || 2;
+            document.getElementById('enableAutoEval').checked = settings.enableAutoEval !== false;
+            document.getElementById('sendNotification').checked = settings.sendNotification !== false;
+        }
+        
+        function closeAutoEvalModal() {
+            document.getElementById('autoEvalModal').style.display = 'none';
+        }
+        
+        function saveAutoEvalSettings() {
+            const settings = {
+                autoEvalTime: document.getElementById('autoEvalTime').value,
+                errorThreshold: parseInt(document.getElementById('errorThreshold').value),
+                enableAutoEval: document.getElementById('enableAutoEval').checked,
+                sendNotification: document.getElementById('sendNotification').checked
+            };
+            
+            localStorage.setItem('autoEvalSettings', JSON.stringify(settings));
+            
+            // Dừng timer cũ
+            if (autoEvaluationTimer) {
+                clearTimeout(autoEvaluationTimer);
+            }
+            
+            // Bắt đầu timer mới nếu được kích hoạt
+            if (settings.enableAutoEval) {
+                scheduleAutoEvaluation();
+                alert('✅ Đã lưu cài đặt đánh giá tự động!');
+            } else {
+                alert('✅ Đã tắt đánh giá tự động!');
+            }
+            
+            closeAutoEvalModal();
+        }
+        
+        function scheduleAutoEvaluation() {
+            const settings = JSON.parse(localStorage.getItem('autoEvalSettings') || '{}');
+            
+            if (!settings.enableAutoEval) return;
+            
+            const [hours, minutes] = settings.autoEvalTime.split(':').map(Number);
+            const now = new Date();
+            const targetTime = new Date();
+            targetTime.setHours(hours, minutes, 0, 0);
+            
+            if (now > targetTime) {
+                targetTime.setDate(targetTime.getDate() + 1);
+            }
+            
+            const timeUntilTarget = targetTime - now;
+            
+            autoEvaluationTimer = setTimeout(() => {
+                runDailyEvaluation();
+                scheduleAutoEvaluation();
+            }, timeUntilTarget);
+            
+            console.log(`Đã lên lịch đánh giá tự động lúc ${settings.autoEvalTime} (${targetTime.toLocaleString()})`);
+        }
+        
+        // ================== CÁC HÀM CHUNG ==================
+        function loadDelivererData() {
+            database.ref('deliverers').once('value')
+                .then(snapshot => {
+                    delivererData = [];
+                    snapshot.forEach(childSnapshot => {
+                        delivererData.push(childSnapshot.val());
+                    });
+                })
+                .catch(error => console.error('Lỗi khi tải dữ liệu người giao:', error));
+        }
+        
+        function showAddDelivererModal() { 
+            document.getElementById('addDelivererModal').style.display = 'block'; 
+        }
+        
+        function closeAddDelivererModal() { 
+            document.getElementById('addDelivererModal').style.display = 'none'; 
+        }
+        
+        function saveDeliverer() {
+            const newNameInput = document.getElementById('newDelivererName');
+            const newName = newNameInput.value.trim();
+
+            if (!newName) {
+                alert('Vui lòng nhập tên người giao!');
+                return;
+            }
+
+            const isDuplicate = delivererData.some(d => d.name.toLowerCase() === newName.toLowerCase());
+            if (isDuplicate) {
+                alert('Tên người giao đã tồn tại!');
+                return;
+            }
+
+            const deliverer = { name: newName, timestamp: new Date().toISOString() };
+            database.ref('deliverers').push(deliverer)
+                .then(() => {
+                    alert('Đã thêm người giao mới thành công!');
+                    newNameInput.value = '';
+                    closeAddDelivererModal();
+                    loadDelivererData();
+                })
+                .catch(error => alert('Lỗi khi lưu: ' + error.message));
+        }
+        
         function showSignatureModal(targetInputId) {
             currentSignatureTarget = targetInputId;
             const modal = document.getElementById('signatureModal');
@@ -1636,42 +2449,19 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
             
             closeSignatureModal();
         }
-
-        // Save new deliverer
-        function saveDeliverer() {
-            const newNameInput = document.getElementById('newDelivererName');
-            const newName = newNameInput.value.trim();
-
-            if (!newName) {
-                alert('Vui lòng nhập tên người giao!');
-                return;
-            }
-
-            const isDuplicate = delivererData.some(d => d.name.toLowerCase() === newName.toLowerCase());
-            if (isDuplicate) {
-                alert('Tên người giao đã tồn tại!');
-                return;
-            }
-
-            const deliverer = { name: newName, timestamp: new Date().toISOString() };
-            database.ref('deliverers').push(deliverer)
-                .then(() => {
-                    alert('Đã thêm người giao mới thành công!');
-                    newNameInput.value = '';
-                    closeAddDelivererModal();
-                    loadDelivererData();
-                })
-                .catch(error => alert('Lỗi khi lưu: ' + error.message));
-        }
-
-        // Xem địa chỉ trên bản đồ
+        
         function viewOnMap(addressFieldId) {
             const address = document.getElementById(addressFieldId).value;
             if (!address) { alert('Vui lòng nhập địa chỉ trước!'); return; }
             window.open(`https://www.google.com/maps?q=${encodeURIComponent(address)}`, '_blank');
         }
         
-        // Báo cáo Giao hàng
+        function toggleReportInputs(reportType, prefix) {
+            document.getElementById(`${prefix}Date`).style.display = reportType === 'daily' ? 'block' : 'none';
+            document.getElementById(`${prefix}Week`).style.display = reportType === 'weekly' ? 'block' : 'none';
+            document.getElementById(`${prefix}Month`).style.display = reportType === 'monthly' ? 'block' : 'none';
+        }
+        
         function generateDeliveryReport() {
             const reportType = document.getElementById('reportType').value;
             const fromDate = document.getElementById('deliveryFromDate').value;
@@ -1725,179 +2515,148 @@ Hàng giao phải xem lại thông tin giao, thanh toán. Dù bất cứ nhân v
                 .catch(error => { console.error('Lỗi khi tạo báo cáo:', error); document.getElementById('reportSpinner').style.display = 'none'; });
         }
         
-       // Báo cáo Đóng hàng (ĐÃ SỬA LỖI TRIỆT ĐỂ)
-async function generatePackingReport() {
-    const reportType = document.getElementById('packingReportType').value;
-    const fromDate = document.getElementById('packingFromDate').value;
-    const toDate = document.getElementById('packingToDate').value;
-    let startDate, endDate;
+        async function generatePackingReport() {
+            const reportType = document.getElementById('packingReportType').value;
+            const fromDate = document.getElementById('packingFromDate').value;
+            const toDate = document.getElementById('packingToDate').value;
+            let startDate, endDate;
 
-    if (fromDate && toDate) {
-        startDate = new Date(fromDate);
-        endDate = new Date(toDate);
-    } else {
-        const now = new Date();
-        switch (reportType) {
-            case 'daily': 
-                startDate = new Date(document.getElementById('packingReportDate').value); 
-                endDate = new Date(startDate); 
-                break;
-            case 'weekly': 
-                const weekVal = document.getElementById('packingReportWeek').value; 
-                startDate = new Date(weekVal); 
-                endDate = new Date(startDate); 
-                endDate.setDate(startDate.getDate() + 6); 
-                break;
-            case 'monthly': 
-                const monthVal = document.getElementById('packingReportMonth').value; 
-                startDate = new Date(monthVal); 
-                endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0); 
-                break;
-        }
-    }
-    endDate.setHours(23, 59, 59, 999);
-
-    document.getElementById('packingReportSpinner').style.display = 'block';
-    
-    try {
-        // QUAN TRỌNG: Tải và xử lý toàn bộ dữ liệu giao hàng trước
-        console.log("Đang tải dữ liệu giao hàng để đối soát...");
-        const deliveriesSnapshot = await database.ref('deliveries').once('value');
-        const completedDeliveries = new Set();
-        
-        deliveriesSnapshot.forEach(childSnapshot => {
-            const delivery = childSnapshot.val();
-            // Tạo key đối soát: Mã đơn + Tên KH (chuẩn hóa)
-            const compositeKey = (delivery.orderId + "||" + delivery.customerName).toLowerCase().trim();
-            completedDeliveries.add(compositeKey);
-            console.log(`Đã giao: ${delivery.orderId} - ${delivery.customerName}`);
-        });
-        
-        console.log(`Tổng số đơn đã giao: ${completedDeliveries.size}`);
-
-        // Tải dữ liệu đóng hàng
-        console.log("Đang tải dữ liệu đóng hàng...");
-        const packingsSnapshot = await database.ref('packings').orderByChild('timestamp').once('value');
-        const reportTableBody = document.getElementById('packingReportTableBody');
-        reportTableBody.innerHTML = '';
-        let count = 0;
-        let fixedCount = 0;
-        
-        packingsSnapshot.forEach(childSnapshot => {
-            const packing = childSnapshot.val();
-            const packingKey = childSnapshot.key;
-            const packingDate = new Date(packing.packingDate);
-            
-            if (packingDate >= startDate && packingDate <= endDate) {
-                count++;
-                
-                // ĐỐI SOÁT CHÉO: Kiểm tra xem đơn này đã được giao chưa
-                const compositeKey = (packing.orderId + "||" + packing.customerName).toLowerCase().trim();
-                const isActuallyDelivered = completedDeliveries.has(compositeKey);
-
-                console.log(`Kiểm tra: ${packing.orderId} - ${packing.customerName} -> ${isActuallyDelivered ? 'ĐÃ GIAO' : 'CHỜ GIAO'}`);
-
-                let statusClass, statusText;
-
-                if (isActuallyDelivered) {
-                    statusClass = 'packed';
-                    statusText = 'Đã kết thúc';
-                    
-                    // TỰ ĐỘNG SỬA TRẠNG THÁI NẾU CHƯA ĐÚNG
-                    if (!packing.isDelivered) {
-                        console.log(`🚨 Tự động sửa trạng thái cho đơn: ${packing.orderId}`);
-                        database.ref('packings/' + packingKey).update({ isDelivered: true });
-                        fixedCount++;
-                    }
-                } else {
-                    statusClass = 'not-packed';
-                    statusText = 'Chờ giao';
-                    
-                    // ĐẢM BẢO TRẠNG THÁI ĐÚNG NẾU CHƯA GIAO
-                    if (packing.isDelivered) {
-                        console.log(`🚨 Tự động sửa trạng thái chờ giao cho đơn: ${packing.orderId}`);
-                        database.ref('packings/' + packingKey).update({ isDelivered: false });
-                        fixedCount++;
-                    }
+            if (fromDate && toDate) {
+                startDate = new Date(fromDate);
+                endDate = new Date(toDate);
+            } else {
+                const now = new Date();
+                switch (reportType) {
+                    case 'daily': 
+                        startDate = new Date(document.getElementById('packingReportDate').value); 
+                        endDate = new Date(startDate); 
+                        break;
+                    case 'weekly': 
+                        const weekVal = document.getElementById('packingReportWeek').value; 
+                        startDate = new Date(weekVal); 
+                        endDate = new Date(startDate); 
+                        endDate.setDate(startDate.getDate() + 6); 
+                        break;
+                    case 'monthly': 
+                        const monthVal = document.getElementById('packingReportMonth').value; 
+                        startDate = new Date(monthVal); 
+                        endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0); 
+                        break;
                 }
-                
-                const row = reportTableBody.insertRow();
-                // BỔ SUNG: Thêm cột Ghi chú vào bảng báo cáo
-                row.innerHTML = `
-                    <td>${count}</td>
-                    <td>${packing.orderId}</td>
-                    <td>${packing.packingDate}</td>
-                    <td>${packing.customerName}</td>
-                    <td>${packing.address}</td>
-                    <td><span class="packing-status ${statusClass}">${statusText}</span></td>
-                    <td>${packing.notes || ''}</td> 
-                    <td><button class="btn btn-sm btn-danger" onclick="confirmDeletePacking('${packingKey}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
             }
-        });
-        
-        if (count === 0) {
-            reportTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Không có dữ liệu</td></tr>';
-        }
-        
-        console.log(`Đã xử lý ${count} đơn đóng hàng, sửa ${fixedCount} trạng thái`);
-        if (fixedCount > 0) {
-            alert(`Đã tự động sửa ${fixedCount} trạng thái không khớp!`);
-        }
-    
-    } catch (error) {
-        console.error('Lỗi khi tạo báo cáo:', error);
-        alert('Có lỗi xảy ra khi tạo báo cáo: ' + error.message);
-    } finally {
-        document.getElementById('packingReportSpinner').style.display = 'none';
-    }
-}
-      // Hàm đồng bộ lại toàn bộ dữ liệu (dùng khi cần fix lỗi)
-async function syncAllPackingStatus() {
-    if (!confirm('Bạn có chắc muốn đồng bộ lại toàn bộ trạng thái đóng hàng với dữ liệu giao hàng?')) {
-        return;
-    }
-    
-    try {
-        // Tải toàn bộ dữ liệu giao hàng
-        const deliveriesSnapshot = await database.ref('deliveries').once('value');
-        const completedDeliveries = new Set();
-        
-        deliveriesSnapshot.forEach(childSnapshot => {
-            const delivery = childSnapshot.val();
-            const compositeKey = (delivery.orderId + "||" + delivery.customerName).toLowerCase().trim();
-            completedDeliveries.add(compositeKey);
-        });
+            endDate.setHours(23, 59, 59, 999);
 
-        // Tải toàn bộ dữ liệu đóng hàng
-        const packingsSnapshot = await database.ref('packings').once('value');
-        let updatedCount = 0;
-        
-        packingsSnapshot.forEach(childSnapshot => {
-            const packing = childSnapshot.val();
-            const packingKey = childSnapshot.key;
+            document.getElementById('packingReportSpinner').style.display = 'block';
             
-            // Kiểm tra trạng thái thực tế
-            const compositeKey = (packing.orderId + "||" + packing.customerName).toLowerCase().trim();
-            const isActuallyDelivered = completedDeliveries.has(compositeKey);
+            try {
+                const deliveriesSnapshot = await database.ref('deliveries').once('value');
+                const completedDeliveries = new Set();
+                
+                deliveriesSnapshot.forEach(childSnapshot => {
+                    const delivery = childSnapshot.val();
+                    const compositeKey = (delivery.orderId + "||" + delivery.customerName).toLowerCase().trim();
+                    completedDeliveries.add(compositeKey);
+                });
+
+                const packingsSnapshot = await database.ref('packings').orderByChild('timestamp').once('value');
+                const reportTableBody = document.getElementById('packingReportTableBody');
+                reportTableBody.innerHTML = '';
+                let count = 0;
+                
+                packingsSnapshot.forEach(childSnapshot => {
+                    const packing = childSnapshot.val();
+                    const packingKey = childSnapshot.key;
+                    const packingDate = new Date(packing.packingDate);
+                    
+                    if (packingDate >= startDate && packingDate <= endDate) {
+                        count++;
+                        
+                        const compositeKey = (packing.orderId + "||" + packing.customerName).toLowerCase().trim();
+                        const isActuallyDelivered = completedDeliveries.has(compositeKey);
+
+                        let statusClass, statusText;
+
+                        if (isActuallyDelivered) {
+                            statusClass = 'packed';
+                            statusText = 'Đã kết thúc';
+                            
+                            if (!packing.isDelivered) {
+                                database.ref('packings/' + packingKey).update({ isDelivered: true });
+                            }
+                        } else {
+                            statusClass = 'not-packed';
+                            statusText = 'Chờ giao';
+                            
+                            if (packing.isDelivered) {
+                                database.ref('packings/' + packingKey).update({ isDelivered: false });
+                            }
+                        }
+                        
+                        const row = reportTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${count}</td>
+                            <td>${packing.orderId}</td>
+                            <td>${packing.packingDate}</td>
+                            <td>${packing.customerName}</td>
+                            <td>${packing.address}</td>
+                            <td><span class="packing-status ${statusClass}">${statusText}</span></td>
+                            <td>${packing.notes || ''}</td> 
+                            <td><button class="btn btn-sm btn-danger" onclick="confirmDeletePacking('${packingKey}')"><i class="fas fa-trash"></i> Xóa</button></td>`;
+                    }
+                });
+                
+                if (count === 0) {
+                    reportTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Không có dữ liệu</td></tr>';
+                }
             
-            // Cập nhật nếu không khớp
-            if (packing.isDelivered !== isActuallyDelivered) {
-                database.ref('packings/' + packingKey).update({ isDelivered: isActuallyDelivered });
-                updatedCount++;
-                console.log(`Đã sửa: ${packing.orderId} -> ${isActuallyDelivered ? 'Đã giao' : 'Chờ giao'}`);
+            } catch (error) {
+                console.error('Lỗi khi tạo báo cáo:', error);
+                alert('Có lỗi xảy ra khi tạo báo cáo: ' + error.message);
+            } finally {
+                document.getElementById('packingReportSpinner').style.display = 'none';
             }
-        });
+        }
         
-        alert(`Đã đồng bộ ${updatedCount} đơn hàng!`);
-        loadPackingData(); // Reload để hiển thị đúng
+        async function syncAllPackingStatus() {
+            if (!confirm('Bạn có chắc muốn đồng bộ lại toàn bộ trạng thái đóng hàng với dữ liệu giao hàng?')) {
+                return;
+            }
+            
+            try {
+                const deliveriesSnapshot = await database.ref('deliveries').once('value');
+                const completedDeliveries = new Set();
+                
+                deliveriesSnapshot.forEach(childSnapshot => {
+                    const delivery = childSnapshot.val();
+                    const compositeKey = (delivery.orderId + "||" + delivery.customerName).toLowerCase().trim();
+                    completedDeliveries.add(compositeKey);
+                });
+
+                const packingsSnapshot = await database.ref('packings').once('value');
+                let updatedCount = 0;
+                
+                packingsSnapshot.forEach(childSnapshot => {
+                    const packing = childSnapshot.val();
+                    const packingKey = childSnapshot.key;
+                    
+                    const compositeKey = (packing.orderId + "||" + packing.customerName).toLowerCase().trim();
+                    const isActuallyDelivered = completedDeliveries.has(compositeKey);
+                    
+                    if (packing.isDelivered !== isActuallyDelivered) {
+                        database.ref('packings/' + packingKey).update({ isDelivered: isActuallyDelivered });
+                        updatedCount++;
+                    }
+                });
+                
+                alert(`Đã đồng bộ ${updatedCount} đơn hàng!`);
+                loadPackingData();
+                
+            } catch (error) {
+                console.error('Lỗi khi đồng bộ:', error);
+                alert('Có lỗi khi đồng bộ: ' + error.message);
+            }
+        }
         
-    } catch (error) {
-        console.error('Lỗi khi đồng bộ:', error);
-        alert('Có lỗi khi đồng bộ: ' + error.message);
-    }
-}
-        
-        // Xóa báo cáo
         function clearDeliveryReport() {
             if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu giao hàng?')) {
                 database.ref('deliveries').remove().then(() => { 
@@ -1908,6 +2667,7 @@ async function syncAllPackingStatus() {
                 });
             }
         }
+        
         function clearPackingReport() {
             if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu đóng hàng?')) {
                 database.ref('packings').remove().then(() => { 
@@ -1919,7 +2679,6 @@ async function syncAllPackingStatus() {
             }
         }
         
-        // Xuất Excel
         function exportDeliveryToExcel() {
             const table = document.getElementById('reportTable');
             if (table.rows.length <= 1) { alert('Không có dữ liệu để xuất!'); return; }
@@ -1933,6 +2692,7 @@ async function syncAllPackingStatus() {
             XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo giao hàng');
             XLSX.writeFile(wb, 'bao_cao_giao_hang.xlsx');
         }
+        
         function exportPackingToExcel() {
             const table = document.getElementById('packingReportTable');
             if (table.rows.length <= 1) { alert('Không có dữ liệu để xuất!'); return; }
@@ -1942,7 +2702,6 @@ async function syncAllPackingStatus() {
             XLSX.writeFile(wb, 'bao_cao_dong_hang.xlsx');
         }
         
-        // Tìm kiếm đơn hàng
         function searchOrders() {
             const searchTerm = document.getElementById('searchOrder').value.toLowerCase();
             const managementTableBody = document.getElementById('managementTableBody');
@@ -1963,13 +2722,6 @@ async function syncAllPackingStatus() {
                 });
         }
         
-        function toggleReportInputs(reportType, prefix) {
-            document.getElementById(`${prefix}Date`).style.display = reportType === 'daily' ? 'block' : 'none';
-            document.getElementById(`${prefix}Week`).style.display = reportType === 'weekly' ? 'block' : 'none';
-            document.getElementById(`${prefix}Month`).style.display = reportType === 'monthly' ? 'block' : 'none';
-        }
-        
-        // Dữ liệu khách hàng
         function loadCustomerData() {
             database.ref('customers').once('value')
                 .then(snapshot => {
@@ -2142,7 +2894,6 @@ async function syncAllPackingStatus() {
                                 item.addEventListener('click', function() {
                                     input.value = this.getElementsByTagName('input')[0].value;
                                     closeAllLists();
-
                                 });
                                 list.appendChild(item);
                             });
@@ -2159,9 +2910,16 @@ async function syncAllPackingStatus() {
                 }
             }
         }
-        document.addEventListener('click', (e) => closeAllLists(e.target));
         
-        autoUppercaseOrderId();
+        function showHelpModal() { 
+            document.getElementById('helpModal').style.display = 'block'; 
+        }
+        
+        function closeHelpModal() { 
+            document.getElementById('helpModal').style.display = 'none'; 
+        }
+        
+        document.addEventListener('click', (e) => closeAllLists(e.target));
     </script>
 </body>
 </html>
